@@ -6,7 +6,7 @@
   color: var(--altcha-color-text, currentColor);
   display: flex;
   flex-direction: column;
-  max-width: var(--altcha-max-width, 260px);
+  max-width: var(--altcha-max-width, 320px);
   position: relative;
 }
 

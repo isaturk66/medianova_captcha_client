@@ -17,8 +17,6 @@ export interface Strings {
 
 export interface Configure {
   auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit';
-  /** @deprecated */
-  blockspam?: boolean;
   challenge?: Challenge | string;
   challengeurl?: string;
   credentials?: 'omit' | 'same-origin' | 'include' | boolean | undefined;
@@ -38,9 +36,6 @@ export interface Configure {
   name?: string;
   obfuscated?: string;
   refetchonexpire?: boolean;
-  sentinel?: Sentinel;
-  /** @deprecated */
-  spamfilter?: boolean | 'ipAddress' | SpamFilter;
   strings?: Partial<Strings> | string;
   test?: boolean | number | 'delay';
   verifyurl?: string;
@@ -48,57 +43,8 @@ export interface Configure {
   workerurl?: string;
 }
 
-/** @deprecated */
-export interface SpamFilter {
-  blockedCountries?: string[];
-  classifier?: string;
-  disableRules?: string[];
-  email?: string | false;
-  expectedCountries?: string[];
-  expectedLanguages?: string[];
-  fields?: string[] | false;
-  ipAddress?: string | false;
-  text?: string | string[];
-  timeZone?: string | false;
-}
-
-export interface Sentinel {
-  fields?: boolean;
-  timeZone?: boolean;
-}
-
 export interface ServerVerificationPayload {
-  blockedCountries?: string[];
-  classifier?: string;
-  disableRules?: string[];
-  email?: string;
-  expectedCountries?: string[];
-  expectedLanguages?: string[];
-  fields?: Record<string, string>;
-  ipAddress?: string;
   payload: string;
-  text?: string | string[];
-  timeZone?: string;
-}
-
-export interface SentinelVerificationPayload {
-  code?: string;
-  email?: string;
-  fields?: Record<string, string>;
-  ipAddress?: string;
-  payload: string;
-  text?: string | string[];
-  timeZone?: string;
-}
-
-export interface SentinelVerificationResponse {
-  algorithm: Algorithm;
-  apiKey: string;
-  reason?: string;
-  score: number;
-  signature: string;
-  verificationData: string;
-  verified: boolean;
 }
 
 export interface Solution {

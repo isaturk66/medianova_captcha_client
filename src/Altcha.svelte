@@ -54,14 +54,13 @@
     getTimeZone,
     clarifyData,
   } from './helpers';
-  import { State, type Sentinel, type SentinelVerificationPayload, type SentinelVerificationResponse } from './types';
   import type { Plugin } from './plugin';
+  import { State } from './types';
   import {
     type Configure,
     type Payload,
     type Challenge,
     type Solution,
-    type SpamFilter,
     type ServerVerificationPayload,
     type Obfuscated,
     type ClarifySolution,
@@ -75,7 +74,6 @@
   interface Props {
     auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit' | undefined;
     /** @deprecated */
-    blockspam?: boolean | undefined;
     challengeurl?: string | undefined;
     challengejson?: string | undefined;
     credentials?: 'omit' | 'same-origin' | 'include' | boolean | undefined;
@@ -98,9 +96,7 @@
     obfuscated?: string | undefined;
     plugins?: string | undefined;
     refetchonexpire?: boolean;
-    sentinel?: Sentinel;
-    /** @deprecated */
-    spamfilter?: boolean | 'ipAddress' | SpamFilter;
+
     strings?: string | undefined;
     test?: boolean | number;
     verifyurl?: string | undefined;
@@ -110,7 +106,6 @@
 
   let {
     auto = undefined,
-    blockspam = undefined,
     challengeurl = undefined,
     challengejson = undefined,
     credentials = undefined,
@@ -133,8 +128,6 @@
     obfuscated = undefined,
     plugins = undefined,
     refetchonexpire = true,
-    sentinel = undefined,
-    spamfilter = false,
     strings = undefined,
     test = false,
     verifyurl = undefined,
@@ -154,11 +147,7 @@
     );
   };
   const documentLocale = document.documentElement.lang?.split('-')?.[0];
-  const isFreeSaaS = $derived(
-    challengeurl &&
-      new URL(challengeurl, location.origin).host.endsWith('.altcha.org') &&
-      !!challengeurl?.includes('apiKey=ckey_')
-  );
+
   const parsedChallengeJson = $derived(
     challengejson ? parseJsonAttribute(challengejson) : undefined
   );
@@ -167,7 +156,9 @@
     ...getI18nStrings($altchaI18nStore),
     ...parsedStrings,
   });
-  const widgetId = $derived(`${id || name}_checkbox_${Math.round(Math.random() * 1e8)}`);
+  const widgetId = $derived(
+    `${id || name}_checkbox_${Math.round(Math.random() * 1e8)}`
+  );
 
   let checked: boolean = $state(false);
   let codeChallenge: {
@@ -178,7 +169,7 @@
   let el: HTMLElement = $state()!;
   let elAnchorArrow: HTMLElement | null = $state(null);
   let elAudio: HTMLAudioElement | null = $state(null);
-  let elCheckbox: HTMLInputElement | null = $state(null)
+  let elCheckbox: HTMLInputElement | null = $state(null);
   let elFloatingAnchor: HTMLElement | null = $state(null);
   let elForm: HTMLFormElement | null = $state(null);
   let error: string | null = $state(null);
@@ -255,11 +246,7 @@
         verify();
       }
     }
-    if (isFreeSaaS && (hidefooter || hidelogo)) {
-      log(
-        'Attributes hidefooter and hidelogo ignored because usage with free API Keys requires attribution.'
-      );
-    }
+
     requestAnimationFrame(() => {
       dispatch('load');
     });
@@ -330,12 +317,7 @@
       log('fetching challenge from', challengeurl);
       const init: RequestInit = {
         credentials: typeof credentials === 'boolean' ? 'include' : credentials,
-        headers:
-          spamfilter !== false
-            ? {
-                'x-altcha-spam-filter': '1',
-              }
-            : {},
+        headers: {},
       };
       const resp = await getFetchFunction()(challengeurl, init);
       if (!resp || resp instanceof Response === false) {
@@ -373,21 +355,9 @@
   }
 
   /**
-   * Get the email field value fot the Spam Filter.
-   */
-  function getEmail(name?: string) {
-    const elInput = elForm?.querySelector(
-      typeof name === 'string'
-        ? `input[name="${name}"]`
-        : 'input[type="email"]:not([data-no-spamfilter])'
-    ) as HTMLInputElement;
-    return elInput?.value?.slice(elInput.value.indexOf('@')) || void 1;
-  }
-
-  /**
    * Get the custom `fetch` function if configured or return the default one.
    */
-   function getFetchFunction() {
+  function getFetchFunction() {
     let fetchFunction: CustomFetchFunction = fetch;
     if (customfetch) {
       log('using customfetch');
@@ -407,47 +377,28 @@
   /**
    * Get internalization strings based on the language preferences provided
    */
-  function getI18nStrings(i18n: Record<string, any>, languages: string[] = [language || '', document.documentElement.lang || '', ...navigator.languages]) {
+  function getI18nStrings(
+    i18n: Record<string, any>,
+    languages: string[] = [
+      language || '',
+      document.documentElement.lang || '',
+      ...navigator.languages,
+    ]
+  ) {
     const codes = Object.keys(i18n).map((code) => code.toLowerCase());
-    const lang = languages.reduce((acc, lang) => {
-      lang = lang.toLowerCase();
-      return acc || (i18n[lang] ? lang : null) || codes.find((code) => lang.split('-')[0] === code.split('-')[0]) || null;
-    }, null as string | null);
+    const lang = languages.reduce(
+      (acc, lang) => {
+        lang = lang.toLowerCase();
+        return (
+          acc ||
+          (i18n[lang] ? lang : null) ||
+          codes.find((code) => lang.split('-')[0] === code.split('-')[0]) ||
+          null
+        );
+      },
+      null as string | null
+    );
     return i18n[lang || 'en'];
-  }
-
-  /**
-   * Get configuration options for the Spam Filter.
-   */
-  function getSpamFilterOptions(): SpamFilter {
-    if (spamfilter === 'ipAddress') {
-      return {
-        blockedCountries: undefined,
-        classifier: undefined,
-        disableRules: undefined,
-        email: false,
-        expectedCountries: undefined,
-        expectedLanguages: undefined,
-        fields: false,
-        ipAddress: undefined,
-        text: undefined,
-        timeZone: undefined,
-      };
-    }
-    return typeof spamfilter === 'object'
-      ? spamfilter
-      : {
-          blockedCountries: undefined,
-          classifier: undefined,
-          disableRules: undefined,
-          email: undefined,
-          expectedCountries: undefined,
-          expectedLanguages: undefined,
-          fields: undefined,
-          ipAddress: undefined,
-          text: undefined,
-          timeZone: undefined,
-        };
   }
 
   /**
@@ -479,7 +430,10 @@
   /**
    * Get the full URL based on the origin uri of the challengeurl.
    */
-  function getServerUrl(uri: string, params?: Record<string, string | undefined | null>) {
+  function getServerUrl(
+    uri: string,
+    params?: Record<string, string | undefined | null>
+  ) {
     const baseUrl = new URL(challengeurl || location.origin);
     const result = new URL(uri, baseUrl);
     if (!result.search) {
@@ -619,30 +573,39 @@
         });
       }
       codeChallengeSubmitting = true;
-      requestSentinelVerification(
-        createAltchaPayload(codeChallenge.challenge, codeChallenge.solution),
-        code,
-      ).then(({ reason, verified }) => {
-        if (!verified) {
-          reset();
-          error = reason || 'Verification failed';
-        } else { 
-          codeChallenge = null;
-          setState(State.VERIFIED);
-          log('verified');
-          tick().then(() => {
-            // Focus the checkbox for better accessibility
-            elCheckbox?.focus();
-            dispatch('verified', { payload });
-          });
-        }
-      }).catch((err) => {
-        codeChallenge = null;
-        setState(State.ERROR, err);
-        log('sentinel verification failed:', err);
-      }).finally(() => {
-        codeChallengeSubmitting = false;
+
+      //    reason, verified = createAltchaPayload(codeChallenge.challenge, codeChallenge.solution)
+
+      //    if (!verified) {
+      //         reset();
+      //         error = reason || 'Verification failed';
+      //       } else {
+      //         codeChallenge = null;
+      //         setState(State.VERIFIED);
+      //         log('verified');
+      //         tick().then(() => {
+      //           // Focus the checkbox for better accessibility
+      //           elCheckbox?.focus();
+      //           dispatch('verified', { payload });
+      //         });
+      //       }
+
+      //       codeChallengeSubmitting = false;
+
+      //   }
+      // }
+
+      //This is where the actual verification logic will be implemented. for now
+
+      codeChallenge = null;
+      setState(State.VERIFIED);
+      log('verified');
+      tick().then(() => {
+        // Focus the checkbox for better accessibility
+        elCheckbox?.focus();
+        dispatch('verified', { payload });
       });
+      codeChallengeSubmitting = false;
     }
   }
 
@@ -650,8 +613,12 @@
    * Called when the checkbox is checked or unchecked.
    */
   function onCheckedChange() {
-    if ([State.UNVERIFIED, State.ERROR, State.EXPIRED, State.CODE].includes(currentState)) {
-      if (spamfilter !== false && elForm?.reportValidity() === false) {
+    if (
+      [State.UNVERIFIED, State.ERROR, State.EXPIRED, State.CODE].includes(
+        currentState
+      )
+    ) {
+      if (elForm?.reportValidity() === false) {
         checked = false;
       } else if (obfuscated) {
         clarify();
@@ -673,7 +640,9 @@
       target &&
       !el.contains(target) &&
       ((currentState === State.VERIFIED && floatingpersist === false) ||
-        (currentState === State.VERIFIED && floatingpersist === 'focus' && !elForm?.matches(':focus-within')) ||
+        (currentState === State.VERIFIED &&
+          floatingpersist === 'focus' &&
+          !elForm?.matches(':focus-within')) ||
         (auto === 'off' && currentState === State.UNVERIFIED))
     ) {
       hide();
@@ -706,7 +675,11 @@
   function onFormFocusIn(ev: FocusEvent) {
     if (currentState === State.UNVERIFIED) {
       verify();
-    } else if (floating && floatingpersist === 'focus' && currentState === State.VERIFIED) {
+    } else if (
+      floating &&
+      floatingpersist === 'focus' &&
+      currentState === State.VERIFIED
+    ) {
       show();
     }
   }
@@ -717,7 +690,9 @@
   function onFormSubmit(ev: SubmitEvent) {
     const target = ev.target as HTMLFormElement | null;
     const submitter = ev.submitter as HTMLElement | null;
-    const isCodeChallengeForm = target?.hasAttribute('data-code-challenge-form');
+    const isCodeChallengeForm = target?.hasAttribute(
+      'data-code-challenge-form'
+    );
     if (isCodeChallengeForm) {
       // Submit event from the code-challenge form -> don't handle
       return;
@@ -818,109 +793,12 @@
   }
 
   /**
-   * Classifies the data using the Spam Filter and sets the payload.
-   */
-  async function requestServerVerification(verificationPayload: string) {
-    if (!verifyurl) {
-      throw new Error('Attribute verifyurl not set.');
-    }
-    log('requesting server verification from', verifyurl);
-    const body: ServerVerificationPayload = {
-      payload: verificationPayload,
-    };
-    if (spamfilter !== false) {
-      const {
-        blockedCountries,
-        classifier,
-        disableRules,
-        email,
-        expectedLanguages,
-        expectedCountries,
-        fields,
-        ipAddress,
-        text,
-        timeZone,
-      } = getSpamFilterOptions();
-      body.blockedCountries = blockedCountries;
-      body.classifier = classifier;
-      body.disableRules = disableRules;
-      body.email = email === false ? undefined : getEmail(email);
-      body.expectedCountries = expectedCountries;
-      body.expectedLanguages =
-        expectedLanguages || (documentLocale ? [documentLocale] : undefined);
-      body.fields = fields === false ? undefined : getTextFields(fields);
-      body.ipAddress = ipAddress === false ? undefined : ipAddress || 'auto';
-      body.text = text;
-      body.timeZone =
-        timeZone === false ? undefined : timeZone || getTimeZone();
-    }
-    const resp = await getFetchFunction()(verifyurl, {
-      body: JSON.stringify(body),
-      headers: {
-        'content-type': 'application/json',
-      },
-      method: 'POST',
-    });
-    if (!resp || resp instanceof Response === false) {
-      throw new Error(`Custom fetch function did not return a response.`);
-    }
-    if (resp.status !== 200) {
-      throw new Error(`Server responded with ${resp.status}.`);
-    }
-    const json = await resp.json();
-    if (json?.payload) {
-      payload = json.payload;
-    }
-    dispatch('serververification', json);
-    if (blockspam && json.classification === 'BAD') {
-      throw new Error('SpamFilter returned negative classification.');
-    }
-  }
-
-  /**
-   * Calls the Sentinel verification endpoint.
-   */
-  async function requestSentinelVerification(verificationPayload: string, code?: string): Promise<SentinelVerificationResponse> {
-    if (!verifyurl) {
-      throw new Error('Attribute verifyurl not set.');
-    }
-    log('requesting sentinel verification from', verifyurl);
-    const body: SentinelVerificationPayload = {
-      code,
-      payload: verificationPayload,
-    };
-    if (sentinel) {
-      body.fields = sentinel.fields ? getTextFields() : undefined;
-      body.timeZone = sentinel.timeZone ? getTimeZone() : undefined;
-    }
-    const resp = await fetch(verifyurl, {
-      body: JSON.stringify(body),
-      headers: {
-        'content-type': 'application/json',
-      },
-      method: 'POST',
-    });
-    if (!resp || resp instanceof Response === false) {
-      throw new Error(`Fetch function did not return a response.`);
-    }
-    if (resp.status !== 200) {
-      throw new Error(`Server responded with ${resp.status}.`);
-    }
-    const json = await resp.json();
-    if (json?.payload) {
-      payload = json.payload;
-    }
-    dispatch('sentinelverification', json);
-    return json;
-  }
-
-  /**
    * Request form submit with a fallback for iOS <16 which does not support requestSubmit
    */
   function requestSubmit(submitter?: HTMLElement | null) {
     if (elForm && 'requestSubmit' in elForm) {
       elForm.requestSubmit(submitter);
-    // @ts-ignore
+      // @ts-ignore
     } else if (elForm?.reportValidity()) {
       if (submitter) {
         submitter.click();
@@ -1004,7 +882,10 @@
     let solution: Solution | ClarifySolution | null = null;
     if ('Worker' in window) {
       try {
-        solution = await solveWorkers(data, data.maxNumber || data.maxnumber || maxnumber);
+        solution = await solveWorkers(
+          data,
+          data.maxNumber || data.maxnumber || maxnumber
+        );
       } catch (err) {
         log(err);
       }
@@ -1039,7 +920,9 @@
 
   async function solveWorkers(
     challenge: Challenge | Obfuscated,
-    max: number = typeof test === 'number' ? test : (challenge.maxNumber || challenge.maxnumber || maxnumber),
+    max: number = typeof test === 'number'
+      ? test
+      : challenge.maxNumber || challenge.maxnumber || maxnumber,
     concurrency: number = Math.ceil(workers)
   ): Promise<Solution | null> {
     const workersInstances: Worker[] = [];
@@ -1117,9 +1000,6 @@
         }
       }
     }
-    if (options.blockspam !== undefined) {
-      blockspam = !!options.blockspam;
-    }
     if (options.customfetch !== undefined) {
       customfetch = options.customfetch;
     }
@@ -1173,15 +1053,7 @@
     if (options.refetchonexpire !== undefined) {
       refetchonexpire = !!options.refetchonexpire;
     }
-    if (options.sentinel !== undefined &&  typeof options.sentinel === 'object') {
-      sentinel = options.sentinel;
-    }
-    if (options.spamfilter !== undefined) {
-      spamfilter =
-        typeof options.spamfilter === 'object'
-          ? options.spamfilter
-          : !!options.spamfilter;
-    }
+
     if (options.strings) {
       strings =
         typeof options.strings === 'string'
@@ -1208,7 +1080,6 @@
   export function getConfiguration(): Configure {
     return {
       auto,
-      blockspam,
       challengeurl,
       debug,
       delay,
@@ -1223,7 +1094,6 @@
       mockerror,
       obfuscated,
       refetchonexpire,
-      spamfilter,
       strings: _strings,
       test,
       verifyurl,
@@ -1378,10 +1248,16 @@
       })
       .then(({ data, solution }) => {
         log('solution', solution);
-        if (!solution || (data && 'challenge' in data && !('clearText' in solution))) {
+        if (
+          !solution ||
+          (data && 'challenge' in data && !('clearText' in solution))
+        ) {
           if (solution?.number !== undefined && 'challenge' in data) {
             if (verifyurl && 'codeChallenge' in data) {
-              if (document.activeElement?.tagName === 'INPUT' && disableautofocus === false) {
+              if (
+                document.activeElement?.tagName === 'INPUT' &&
+                disableautofocus === false
+              ) {
                 // blur the checkbox to make the code challenge input autofocus work
                 (document.activeElement as HTMLInputElement).blur();
               }
@@ -1389,16 +1265,6 @@
                 challenge: data,
                 solution,
               };
-
-            } else if (verifyurl && sentinel !== undefined) {
-              return requestSentinelVerification(
-                createAltchaPayload(data, solution)
-              ) as Promise<unknown>;
-
-            } else if (verifyurl) {
-              return requestServerVerification(
-                createAltchaPayload(data, solution)
-              );
             } else {
               payload = createAltchaPayload(data, solution);
               log('payload', payload);
@@ -1417,7 +1283,6 @@
           tick().then(() => {
             dispatch('code', { codeChallenge });
           });
-
         } else {
           setState(State.VERIFIED);
           log('verified');
@@ -1460,10 +1325,7 @@
       />
     </div>
 
-    <label
-      class="altcha-label"
-      for={widgetId}
-    >
+    <label class="altcha-label" for={widgetId}>
       {#if currentState === State.VERIFIED}
         {@html _strings.verified}
       {:else if currentState === State.VERIFYING}
@@ -1479,7 +1341,7 @@
       <input type="hidden" {name} value={payload} />
     {/if}
 
-    {#if hidelogo !== true || isFreeSaaS}
+    {#if hidelogo !== true}
       <div>
         <a
           href={website}
@@ -1489,136 +1351,197 @@
           aria-hidden="true"
         >
           <svg
-            width="22"
-            height="22"
-            viewBox="0 0 20 20"
-            fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+             width="100"
+            height="20"
+            viewBox="0 0 1210 200"
+            fill="none"
           >
-            <path
-              d="M2.33955 16.4279C5.88954 20.6586 12.1971 21.2105 16.4279 17.6604C18.4699 15.947 19.6548 13.5911 19.9352 11.1365L17.9886 10.4279C17.8738 12.5624 16.909 14.6459 15.1423 16.1284C11.7577 18.9684 6.71167 18.5269 3.87164 15.1423C1.03163 11.7577 1.4731 6.71166 4.8577 3.87164C8.24231 1.03162 13.2883 1.4731 16.1284 4.8577C16.9767 5.86872 17.5322 7.02798 17.804 8.2324L19.9522 9.01429C19.7622 7.07737 19.0059 5.17558 17.6604 3.57212C14.1104 -0.658624 7.80283 -1.21043 3.57212 2.33956C-0.658625 5.88958 -1.21046 12.1971 2.33955 16.4279Z"
-              fill="currentColor"
-            />
-            <path
-              d="M3.57212 2.33956C1.65755 3.94607 0.496389 6.11731 0.12782 8.40523L2.04639 9.13961C2.26047 7.15832 3.21057 5.25375 4.8577 3.87164C8.24231 1.03162 13.2883 1.4731 16.1284 4.8577L13.8302 6.78606L19.9633 9.13364C19.7929 7.15555 19.0335 5.20847 17.6604 3.57212C14.1104 -0.658624 7.80283 -1.21043 3.57212 2.33956Z"
-              fill="currentColor"
-            />
-            <path
-              d="M7 10H5C5 12.7614 7.23858 15 10 15C12.7614 15 15 12.7614 15 10H13C13 11.6569 11.6569 13 10 13C8.3431 13 7 11.6569 7 10Z"
-              fill="currentColor"
-            />
+            <style type="text/css">
+              .st0 {
+                fill-rule: evenodd;
+                clip-rule: evenodd;
+                fill: #ec2027;
+              }
+              .st1 {
+                fill: #002133;
+              }
+              .st2 {
+                fill: #ec2027;
+              }
+            </style>
+            <g
+              id="Vector_Smart_Object_00000030466827934817185210000010797782918708865684_"
+            >
+              <g>
+                <g>
+                  <path
+                    class="st0"
+                    d="M63.79,69.92l-0.22,0.22L5,35.92V13.65h25.92L63.79,69.92z M35.51,122.34l11.85-11.85L5,57.95v-6.66     l63.82,37.74l13.42-13.41L45.59,13.65h7.87l50.24,40.5l12.29-12.3L79.4,13.65h83.06l-22.5,172.69H78.01     C29.06,186.35,5,171.93,5,133.25V82.77L35.51,122.34z"
+                  ></path>
+                  <path
+                    class="st1"
+                    d="M315.09,144.09L304.34,43.84h-0.38l-25.74,100.25h-23.04L229.44,43.84h-0.38L218.3,144.09h-20.36     l16.32-126.17h24.97l27.65,105.43h0.39l27.65-105.43h24.97l16.33,126.17H315.09z M432.05,128.54v15.55h-84.5V17.92h84.5v15.56     h-63.37v35.95h59.53v14.86h-59.53v44.25H432.05z M479.86,144.09h-30.73V17.92h30.73c24.71,0,43.37,5.22,55.98,15.64     c12.61,10.43,18.92,25.67,18.92,45.72C554.76,122.48,529.8,144.09,479.86,144.09 M481.78,33.47h-11.52v95.06h11.52     c18.05,0,31.37-3.92,39.95-11.75c8.57-7.84,12.86-20.34,12.86-37.51C534.59,48.74,516.99,33.47,481.78,33.47 M569.93,17.92h23.05     v126.17h-23.05V17.92z M702.63,144.09l-11.33-33.53h-51.85l-11.33,33.53h-21.89l48.01-126.17h23.04l48.01,126.17H702.63z      M665.57,35.2h-0.39L644.63,95.7h41.48L665.57,35.2z"
+                  ></path>
+                  <path
+                    class="st2"
+                    d="M815.73,144.09l-45.32-77.43h-0.38v77.43h-31.31V17.92h31.31l45.32,77.43h0.38V17.92h31.11v126.17H815.73z      M968.5,128.62c-11.71,11.46-27.68,17.2-47.91,17.2c-20.23,0-36.24-5.73-48.01-17.2c-11.78-11.47-17.67-27.34-17.67-47.62     c0-20.27,5.89-36.15,17.67-47.61c11.77-11.47,27.78-17.2,48.01-17.2c20.23,0,36.2,5.73,47.91,17.2     c11.71,11.46,17.57,27.34,17.57,47.61C986.07,101.28,980.21,117.15,968.5,128.62 M920.59,40.38c-21.51,0-32.26,13.54-32.26,40.62     c0,27.08,10.75,40.62,32.26,40.62c21.38,0,32.07-13.53,32.07-40.62C952.66,53.93,941.97,40.38,920.59,40.38 M1057.89,144.09     h-34.57L977.81,17.92h34.76l27.66,98h0.38l28.8-98h33.8L1057.89,144.09z M1170.43,144.09l-7.68-27.3h-41.67l-7.49,27.3h-33.99     l45.52-126.17h34.56L1205,144.09H1170.43z M1142.2,43.32h-0.39l-14.4,51.16h29L1142.2,43.32z"
+                  ></path>
+                </g>
+              </g>
+            </g>
           </svg>
         </a>
       </div>
     {/if}
 
     {#if codeChallenge?.challenge.codeChallenge}
-    <div
-      class="altcha-code-challenge"
-      role="dialog"
-      aria-label={_strings.verificationRequired}
-    >
-      <div class="altcha-code-challenge-arrow"></div>
-
-      <form
-        data-code-challenge-form="1"
-        onsubmitcapture={onCodeChallengeSubmit}
+      <div
+        class="altcha-code-challenge"
+        role="dialog"
+        aria-label={_strings.verificationRequired}
       >
-        <img class="altcha-code-challenge-image" src={codeChallenge.challenge.codeChallenge.image} alt="" />
+        <div class="altcha-code-challenge-arrow"></div>
 
-        <!-- svelte-ignore a11y_autofocus -->
-        <input
-          type="text"
-          autocomplete="off"
-          name="code"
-          minlength={codeChallenge.challenge.codeChallenge.length || 1}
-          maxlength={codeChallenge.challenge.codeChallenge.length}
-          class="altcha-code-challenge-input"
-          placeholder={_strings.enterCode}
-          aria-label={
-            codeChallengeAudioState === AudioState.LOADING
-            ? _strings.loading
-            : codeChallengeAudioState === AudioState.PLAYING ? '' : _strings.enterCodeAria
-          }
-          aria-live={codeChallengeAudioState ? 'assertive' : 'polite'}
-          aria-busy={codeChallengeAudioState === AudioState.LOADING}
-          disabled={codeChallengeSubmitting}
-          required
-          autofocus={!disableautofocus}
-          onkeydown={onCodeChallengeInputKeyDown}
-        />
+        <form
+          data-code-challenge-form="1"
+          onsubmitcapture={onCodeChallengeSubmit}
+        >
+          <img
+            class="altcha-code-challenge-image"
+            src={codeChallenge.challenge.codeChallenge.image}
+            alt=""
+          />
 
-        <div class="altcha-code-challenge-buttons">
-          <div  class="altcha-code-challenge-buttons-left">
-            {#if codeChallenge.challenge.codeChallenge.audio}
-            <button
-              type="button"
-              title={_strings.getAudioChallenge}
-              class="altcha-code-challenge-audio"
-              disabled={codeChallengeAudioState === AudioState.LOADING || codeChallengeAudioState === AudioState.ERROR || codeChallengeSubmitting}
-              aria-label={codeChallengeAudioState === AudioState.LOADING ? _strings.loading : _strings.getAudioChallenge}
-              onclick={onPlayCodeChallengeAudio}
-            >
-              {#if codeChallengeAudioState === AudioState.LOADING}
-                {@render spinner(20)}
-              {:else if codeChallengeAudioState === AudioState.ERROR}
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.8659 3.00017L22.3922 19.5002C22.6684 19.9785 22.5045 20.5901 22.0262 20.8662C21.8742 20.954 21.7017 21.0002 21.5262 21.0002H2.47363C1.92135 21.0002 1.47363 20.5525 1.47363 20.0002C1.47363 19.8246 1.51984 19.6522 1.60761 19.5002L11.1339 3.00017C11.41 2.52187 12.0216 2.358 12.4999 2.63414C12.6519 2.72191 12.7782 2.84815 12.8659 3.00017ZM10.9999 16.0002V18.0002H12.9999V16.0002H10.9999ZM10.9999 9.00017V14.0002H12.9999V9.00017H10.9999Z"></path></svg>
-              {:else if codeChallengeAudioState === AudioState.PLAYING}
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15 7C15 6.44772 15.4477 6 16 6C16.5523 6 17 6.44772 17 7V17C17 17.5523 16.5523 18 16 18C15.4477 18 15 17.5523 15 17V7ZM7 7C7 6.44772 7.44772 6 8 6C8.55228 6 9 6.44772 9 7V17C9 17.5523 8.55228 18 8 18C7.44772 18 7 17.5523 7 17V7Z"></path></svg>
-              {:else}
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12H7C8.10457 12 9 12.8954 9 14V19C9 20.1046 8.10457 21 7 21H4C2.89543 21 2 20.1046 2 19V12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12V19C22 20.1046 21.1046 21 20 21H17C15.8954 21 15 20.1046 15 19V14C15 12.8954 15.8954 12 17 12H20C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12Z"></path></svg>
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            type="text"
+            autocomplete="off"
+            name="code"
+            minlength={codeChallenge.challenge.codeChallenge.length || 1}
+            maxlength={codeChallenge.challenge.codeChallenge.length}
+            class="altcha-code-challenge-input"
+            placeholder={_strings.enterCode}
+            aria-label={codeChallengeAudioState === AudioState.LOADING
+              ? _strings.loading
+              : codeChallengeAudioState === AudioState.PLAYING
+                ? ''
+                : _strings.enterCodeAria}
+            aria-live={codeChallengeAudioState ? 'assertive' : 'polite'}
+            aria-busy={codeChallengeAudioState === AudioState.LOADING}
+            disabled={codeChallengeSubmitting}
+            required
+            autofocus={!disableautofocus}
+            onkeydown={onCodeChallengeInputKeyDown}
+          />
+
+          <div class="altcha-code-challenge-buttons">
+            <div class="altcha-code-challenge-buttons-left">
+              {#if codeChallenge.challenge.codeChallenge.audio}
+                <button
+                  type="button"
+                  title={_strings.getAudioChallenge}
+                  class="altcha-code-challenge-audio"
+                  disabled={codeChallengeAudioState === AudioState.LOADING ||
+                    codeChallengeAudioState === AudioState.ERROR ||
+                    codeChallengeSubmitting}
+                  aria-label={codeChallengeAudioState === AudioState.LOADING
+                    ? _strings.loading
+                    : _strings.getAudioChallenge}
+                  onclick={onPlayCodeChallengeAudio}
+                >
+                  {#if codeChallengeAudioState === AudioState.LOADING}
+                    {@render spinner(20)}
+                  {:else if codeChallengeAudioState === AudioState.ERROR}
+                    <svg
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      ><path
+                        d="M12.8659 3.00017L22.3922 19.5002C22.6684 19.9785 22.5045 20.5901 22.0262 20.8662C21.8742 20.954 21.7017 21.0002 21.5262 21.0002H2.47363C1.92135 21.0002 1.47363 20.5525 1.47363 20.0002C1.47363 19.8246 1.51984 19.6522 1.60761 19.5002L11.1339 3.00017C11.41 2.52187 12.0216 2.358 12.4999 2.63414C12.6519 2.72191 12.7782 2.84815 12.8659 3.00017ZM10.9999 16.0002V18.0002H12.9999V16.0002H10.9999ZM10.9999 9.00017V14.0002H12.9999V9.00017H10.9999Z"
+                      ></path></svg
+                    >
+                  {:else if codeChallengeAudioState === AudioState.PLAYING}
+                    <svg
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      ><path
+                        d="M15 7C15 6.44772 15.4477 6 16 6C16.5523 6 17 6.44772 17 7V17C17 17.5523 16.5523 18 16 18C15.4477 18 15 17.5523 15 17V7ZM7 7C7 6.44772 7.44772 6 8 6C8.55228 6 9 6.44772 9 7V17C9 17.5523 8.55228 18 8 18C7.44772 18 7 17.5523 7 17V7Z"
+                      ></path></svg
+                    >
+                  {:else}
+                    <svg
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      ><path
+                        d="M4 12H7C8.10457 12 9 12.8954 9 14V19C9 20.1046 8.10457 21 7 21H4C2.89543 21 2 20.1046 2 19V12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12V19C22 20.1046 21.1046 21 20 21H17C15.8954 21 15 20.1046 15 19V14C15 12.8954 15.8954 12 17 12H20C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12Z"
+                      ></path></svg
+                    >
+                  {/if}
+                </button>
               {/if}
-            </button>
-            {/if}
+
+              <button
+                type="button"
+                aria-label={_strings.reload}
+                title={_strings.reload}
+                class="altcha-code-challenge-reload"
+                disabled={codeChallengeSubmitting}
+                onclick={onCodeChallengeReload}
+              >
+                <svg
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  ><path
+                    d="M2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2V4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 9.25022 5.38734 6.82447 7.50024 5.38451L7.5 8H9.5V2L3.5 2V4L5.99918 3.99989C3.57075 5.82434 2 8.72873 2 12Z"
+                  ></path></svg
+                >
+              </button>
+            </div>
 
             <button
-              type="button"
-              aria-label={_strings.reload}
-              title={_strings.reload}
-              class="altcha-code-challenge-reload"
+              type="submit"
+              class="altcha-code-challenge-verify"
               disabled={codeChallengeSubmitting}
-              onclick={onCodeChallengeReload}
+              aria-label={_strings.verify}
             >
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2V4C16.4183 4 20 7.58172 20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 9.25022 5.38734 6.82447 7.50024 5.38451L7.5 8H9.5V2L3.5 2V4L5.99918 3.99989C3.57075 5.82434 2 8.72873 2 12Z"></path></svg>
+              {#if codeChallengeSubmitting}
+                {@render spinner(16)}
+              {/if}
+              {_strings.verify}
             </button>
           </div>
 
-          <button
-            type="submit"
-            class="altcha-code-challenge-verify"
-            disabled={codeChallengeSubmitting}
-            aria-label={_strings.verify}
-          >
-            {#if codeChallengeSubmitting}
-              {@render spinner(16)}
-            {/if}
-            {_strings.verify}
-          </button>
-        </div>
-
-        {#if codeChallenge.challenge.codeChallenge.audio && playCodeChallengeAudio}
-        <audio
-          bind:this={elAudio}
-          hidden
-          autoplay
-          onloadstart={onAudioLoadStart}
-          oncanplay={onAudioCanPlay}
-          onpause={onAudioPause}
-          onplaying={onAudioPlaying}
-          onended={onAudioEnded}
-        >
-          <source
-            src={getServerUrl(codeChallenge.challenge.codeChallenge.audio, {
-              language,
-            })}
-            onerror={onAudioError}
-          />
-        </audio>
-        {/if}
-      </form>
-    </div>
+          {#if codeChallenge.challenge.codeChallenge.audio && playCodeChallengeAudio}
+            <audio
+              bind:this={elAudio}
+              hidden
+              autoplay
+              onloadstart={onAudioLoadStart}
+              oncanplay={onAudioCanPlay}
+              onpause={onAudioPause}
+              onplaying={onAudioPlaying}
+              onended={onAudioEnded}
+            >
+              <source
+                src={getServerUrl(codeChallenge.challenge.codeChallenge.audio, {
+                  language,
+                })}
+                onerror={onAudioError}
+              />
+            </audio>
+          {/if}
+        </form>
+      </div>
     {/if}
-
   </div>
 
   {#if error || currentState === State.EXPIRED}
@@ -1647,7 +1570,7 @@
     </div>
   {/if}
 
-  {#if _strings.footer && (hidefooter !== true || isFreeSaaS)}
+  {#if _strings.footer && hidefooter !== true}
     <div class="altcha-footer">
       <div>{@html _strings.footer}</div>
     </div>
