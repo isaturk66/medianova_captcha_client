@@ -2,9 +2,6 @@
   import { onMount } from 'svelte';
   import InlineWorker from './worker?worker&inline';
   
-  import './plugins/obfuscation';
-  import './plugins/upload';
-
   import './altcha.css';
   import './Altcha.svelte';
   import type Altcha from './Altcha.svelte';

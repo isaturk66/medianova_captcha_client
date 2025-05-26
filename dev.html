@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Altcha-Lite Dev</title>
+
+    <!-- Vite will transform this entry on the fly -->
+    <script type="module" src="/src/main.ts"></script>
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+        }
+
+        main {
+            max-width: 480px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        .buttons {
+            margin-top: 1rem;
+            display: flex;
+            gap: .5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Altcha-Lite playground</h1>
+
+        <form id="demo" action="#" method="post">
+
+            <!-- Your custom element lives here -->
+            <altcha-widget id="altcha" challengeurl="http://localhost/captcha/1/challenge" auto="onload"
+                hidefooter="true" hidelogo="true"></altcha-widget>
+
+            <div class="buttons">
+                <button type="submit">Submit</button>
+                <button type="reset">Reset</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        /* simple event logger */
+        addEventListener('load', () => {
+            document
+                .querySelector('#altcha')
+                .addEventListener('statechange', (ev) =>
+                    console.log('%c[statechange]', 'color:#0af', ev.detail)
+                );
+        });
+    </script>
+</body>
+
+</html>
