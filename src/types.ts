@@ -95,7 +95,6 @@ export interface PluginContext {
   clarify(): Promise<void>;
   dispatch: <T>(event: string, detail?: T) => void;
   getConfiguration(): Configure;
-  getFloatingAnchor(): HTMLElement | null;
   getState(): State;
   log(...args: unknown[]): void;
   reset(state?: State, err?: string | null): void;
@@ -103,7 +102,6 @@ export interface PluginContext {
     data: Challenge | Obfuscated;
     solution: Solution | ClarifySolution | null;
   }>;
-  setFloatingAnchor(el: HTMLElement): void;
   setState(state: State, err?: string | null): void;
   verify(): Promise<void>;
 }

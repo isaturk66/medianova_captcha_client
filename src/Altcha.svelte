@@ -18,9 +18,6 @@
       expire: {
         type: 'Number',
       },
-      floatingoffset: {
-        type: 'Number',
-      },
       hidefooter: {
         type: 'Boolean',
       },
@@ -61,7 +58,6 @@
     type Payload,
     type Challenge,
     type Solution,
-    type ServerVerificationPayload,
     type Obfuscated,
     type ClarifySolution,
     type PluginContext,
@@ -82,10 +78,6 @@
     delay?: number;
     disableautofocus?: boolean;
     expire?: number | undefined;
-    floating?: 'auto' | 'top' | 'bottom' | 'false' | '' | boolean | undefined;
-    floatinganchor?: string | undefined;
-    floatingoffset?: number | undefined;
-    floatingpersist?: 'focus' | boolean | undefined;
     hidefooter?: boolean;
     hidelogo?: boolean;
     id?: string;
@@ -114,10 +106,6 @@
     delay = 0,
     disableautofocus = false,
     expire = undefined,
-    floating = undefined,
-    floatinganchor = undefined,
-    floatingoffset = undefined,
-    floatingpersist = false,
     hidefooter = false,
     hidelogo = false,
     id = undefined,
@@ -200,9 +188,7 @@
       clearTimeout(expireTimeout);
       expireTimeout = null;
     }
-    document.removeEventListener('click', onDocumentClick);
-    document.removeEventListener('scroll', onDocumentScroll);
-    window.removeEventListener('resize', onWindowResize);
+
   });
 
   onMount(() => {
@@ -226,16 +212,14 @@
     if (auto !== undefined) {
       log('auto', auto);
     }
-    if (floating !== undefined) {
-      setFloating(floating);
-    }
+   
     elForm = el?.closest('form');
     if (elForm) {
       elForm.addEventListener('submit', onFormSubmit, {
         capture: true,
       });
       elForm.addEventListener('reset', onFormReset);
-      if (auto === 'onfocus' || floatingpersist === 'focus') {
+      if (auto === 'onfocus') {
         elForm.addEventListener('focusin', onFormFocusIn);
       }
     }
@@ -463,13 +447,11 @@
             clarify,
             dispatch,
             getConfiguration,
-            getFloatingAnchor,
             getState,
             log,
             reset,
             solve,
             setState,
-            setFloatingAnchor,
             verify,
           } satisfies PluginContext)
         );
@@ -630,33 +612,8 @@
     }
   }
 
-  /**
-   * Handles click events on the document.
-   */
-  function onDocumentClick(ev: MouseEvent) {
-    const target = ev.target as HTMLElement;
-    if (
-      floating &&
-      target &&
-      !el.contains(target) &&
-      ((currentState === State.VERIFIED && floatingpersist === false) ||
-        (currentState === State.VERIFIED &&
-          floatingpersist === 'focus' &&
-          !elForm?.matches(':focus-within')) ||
-        (auto === 'off' && currentState === State.UNVERIFIED))
-    ) {
-      hide();
-    }
-  }
 
-  /**
-   * Handles scroll events on the document.
-   */
-  function onDocumentScroll() {
-    if (floating && currentState !== State.UNVERIFIED) {
-      repositionFloating();
-    }
-  }
+
 
   /**
    * Handles changes in the error state and notifies plugins.
@@ -673,15 +630,9 @@
    * Handles the form focus-in event.
    */
   function onFormFocusIn(ev: FocusEvent) {
-    if (currentState === State.UNVERIFIED) {
-      verify();
-    } else if (
-      floating &&
-      floatingpersist === 'focus' &&
-      currentState === State.VERIFIED
-    ) {
-      show();
-    }
+      if (currentState === State.UNVERIFIED) {
+    verify();
+  }
   }
 
   /**
@@ -711,15 +662,6 @@
           onInvalid();
         }
       }
-    } else if (
-      elForm &&
-      floating &&
-      auto === 'off' &&
-      currentState === State.UNVERIFIED
-    ) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      show();
     }
   }
 
@@ -768,22 +710,10 @@
         plugin.onStateChange(currentState);
       }
     }
-    if (floating && currentState !== State.UNVERIFIED) {
-      requestAnimationFrame(() => {
-        repositionFloating();
-      });
-    }
+    
     checked = currentState === State.VERIFIED;
   }
 
-  /**
-   * Handles resize events on the window.
-   */
-  function onWindowResize() {
-    if (floating) {
-      repositionFloating();
-    }
-  }
 
   /**
    * Parses a JSON attribute string.
@@ -825,32 +755,6 @@
     }
   }
 
-  /**
-   * Set the floating UI mode.
-   */
-  function setFloating(strategy: typeof floating) {
-    log('floating', strategy);
-    if (floating !== strategy) {
-      el.style.left = '';
-      el.style.top = '';
-    }
-    floating =
-      strategy === true || strategy === ''
-        ? 'auto'
-        : strategy === false || strategy === 'false'
-          ? undefined
-          : floating;
-    if (floating) {
-      if (!auto) {
-        auto = 'onsubmit';
-      }
-      document.addEventListener('scroll', onDocumentScroll);
-      document.addEventListener('click', onDocumentClick);
-      window.addEventListener('resize', onWindowResize);
-    } else if (auto === 'onsubmit') {
-      auto = undefined;
-    }
-  }
 
   /**
    * Validates a retrieved challenge and throws if invalid.
@@ -1003,17 +907,8 @@
     if (options.customfetch !== undefined) {
       customfetch = options.customfetch;
     }
-    if (options.floatinganchor !== undefined) {
-      floatinganchor = options.floatinganchor;
-    }
     if (options.delay !== undefined) {
       delay = options.delay;
-    }
-    if (options.floatingoffset !== undefined) {
-      floatingoffset = options.floatingoffset;
-    }
-    if (options.floating !== undefined) {
-      setFloating(options.floating);
     }
     if (options.expire !== undefined) {
       setExpire(options.expire);
@@ -1084,9 +979,6 @@
       debug,
       delay,
       expire,
-      floating: floating as Configure['floating'],
-      floatinganchor,
-      floatingoffset,
       hidefooter,
       hidelogo,
       name,
@@ -1102,12 +994,6 @@
     };
   }
 
-  /**
-   * Get the current "floating anchor" as an HTML element or null.
-   */
-  export function getFloatingAnchor() {
-    return elFloatingAnchor;
-  }
 
   /**
    * Get a loaded plugin by it's name.
@@ -1133,63 +1019,6 @@
   }
 
   /**
-   * Repositions the floating UI element based on scroll position.
-   */
-  export function repositionFloating(viewportOffset: number = 20) {
-    if (el) {
-      if (!elFloatingAnchor) {
-        elFloatingAnchor =
-          (floatinganchor
-            ? document.querySelector<HTMLElement>(floatinganchor)
-            : elForm?.querySelector(
-                'input[type="submit"], button[type="submit"], button:not([type="button"]):not([type="reset"])'
-              )) || elForm;
-      }
-      if (elFloatingAnchor) {
-        // @ts-expect-error
-        const offsetY = parseInt(floatingoffset, 10) || 12;
-        const anchorBoundry = elFloatingAnchor.getBoundingClientRect();
-        const elBoundary = el.getBoundingClientRect();
-        const docHeight = document.documentElement.clientHeight;
-        const docWidth = document.documentElement.clientWidth;
-        const showOnTop =
-          floating === 'auto'
-            ? anchorBoundry.bottom +
-                elBoundary.height +
-                offsetY +
-                viewportOffset >
-              docHeight
-            : floating === 'top';
-        const left = Math.max(
-          viewportOffset,
-          Math.min(
-            docWidth - viewportOffset - elBoundary.width,
-            anchorBoundry.left + anchorBoundry.width / 2 - elBoundary.width / 2
-          )
-        );
-        if (showOnTop) {
-          el.style.top = `${anchorBoundry.top - (elBoundary.height + offsetY)}px`;
-        } else {
-          el.style.top = `${anchorBoundry.bottom + offsetY}px`;
-        }
-        el.style.left = `${left}px`;
-        el.setAttribute('data-floating', showOnTop ? 'top' : 'bottom');
-        if (elAnchorArrow) {
-          const anchorArrowBoundry = elAnchorArrow.getBoundingClientRect();
-          elAnchorArrow.style.left =
-            anchorBoundry.left -
-            left +
-            anchorBoundry.width / 2 -
-            anchorArrowBoundry.width / 2 +
-            'px';
-        }
-      } else {
-        log('unable to find floating anchor element');
-      }
-    }
-  }
-
-  /**
    * Clears the state and resets the form.
    */
   export function reset(
@@ -1208,12 +1037,6 @@
     setState(newState, err);
   }
 
-  /**
-   * Set the "floating anchor" HTML element.
-   */
-  export function setFloatingAnchor(el: HTMLElement) {
-    elFloatingAnchor = el;
-  }
 
   /**
    * Set the state and optional error message.
@@ -1229,9 +1052,7 @@
    */
   export function show() {
     el.style.display = 'block';
-    if (floating) {
-      repositionFloating();
-    }
+  
   }
 
   /**
@@ -1304,7 +1125,6 @@
   bind:this={el}
   class="altcha"
   data-state={currentState}
-  data-floating={floating}
 >
   <div class="altcha-main">
     <div
@@ -1318,7 +1138,7 @@
         bind:this={elCheckbox}
         type="checkbox"
         id={widgetId}
-        required={auto !== 'onsubmit' && (!floating || auto !== 'off')}
+        required={auto !== 'onsubmit' }
         bind:checked
         onchange={onCheckedChange}
         oninvalid={onInvalid}
@@ -1576,9 +1396,6 @@
     </div>
   {/if}
 
-  {#if floating}
-    <div bind:this={elAnchorArrow} class="altcha-anchor-arrow"></div>
-  {/if}
 </div>
 
 {#snippet spinner(size: number = 24)}
