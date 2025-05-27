@@ -74,18 +74,14 @@
     }
   },
   "scripts": {
-    "dev": "vite",
-    "build": "npm run build:bundle && npm run build:external && npm run build:plugins && npm run build:i18n",
-    "build:bundle": "rimraf dist && vite build && vite build -c vite.bundle-i18n.config.ts && cp src/declarations.d.ts dist/altcha.d.ts && cp src/declarations.d.ts dist/altcha.i18n.d.ts",
-    "build:external": "rimraf dist_external && vite build -c vite.external.config.ts && cp src/declarations.d.ts dist_external/altcha.d.ts",
-    "build:plugins": "rimraf dist_plugins && find src/plugins -type f -name '*.ts' | xargs -I {} vite build -c vite.plugins.config.ts -- {}",
-    "build:i18n": "rimraf dist_i18n && find src/i18n -type f -name '*.ts' | xargs -I {} vite build -c vite.i18n.config.ts -- {}",
-    "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
-    "format": "prettier --write ./src/**/*",
-    "test": "vitest run tests/helpers.test.ts",
-    "test:e2e": "testcafe chrome,firefox e2e/altcha.fixture.ts --hostname localhost",
-    "prepare": "husky"
+    "dev": "vite",                         
+
+    "build": "npm run build:core && npm run build:i18n",
+
+
+    "build:core": "rimraf dist && vite build",
+
+    "build:i18n": "vite build -c vite.bundle-i18n.config.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

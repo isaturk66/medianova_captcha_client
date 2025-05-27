@@ -83,6 +83,7 @@ export function solveChallenge(
 ): { promise: Promise<Solution | null>; controller: AbortController } {
   const controller = new AbortController();
   const startTime = Date.now();
+
   const fn = async () => {
     for (let n = start; n <= max; n += 1) {
       if (controller.signal.aborted) {

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8" />
@@ -7,9 +7,13 @@
     <title>Altcha-Lite Dev</title>
 
     <!-- Vite will transform this entry on the fly -->
-    <script type="module" src="/src/main.ts"></script>
+    <!-- <script type="module" src="/src/entry.ts"></script> -->
 
-    <!-- <script async defer src="./dist/altcha.js" type="module"></script> -->
+    <script async defer src="./dist/altcha.js" type="module"></script>
+
+    <!-- 2. all translations in one go -->
+    <script async defer src="./dist/altcha.i18n.js" type="module"></script>
+
 
     <style>
         body {
@@ -37,7 +41,8 @@
         <form id="demo" action="#" method="post">
 
             <!-- Your custom element lives here -->
-            <altcha-widget id="altcha" challengeurl="http://localhost/captcha/1/challenge"></altcha-widget>
+            <altcha-widget id="altcha"
+ debug="true" challengeurl="http://localhost/captcha/1/challenge"></altcha-widget>
 
             <div class="buttons">
                 <button type="submit">Submit</button>

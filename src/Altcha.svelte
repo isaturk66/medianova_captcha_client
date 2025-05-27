@@ -630,12 +630,14 @@
     solution: Solution | null;
   }> {
     let solution: Solution  | null = null;
+
     if ('Worker' in window) {
       try {
         solution = await solveWorkers(
           data,
           data.maxNumber || data.maxnumber || maxnumber
         );
+
       } catch (err) {
         log(err);
       }
@@ -664,8 +666,11 @@
       : challenge.maxNumber || challenge.maxnumber || maxnumber,
     concurrency: number = Math.ceil(workers)
   ): Promise<Solution | null> {
+
     const workersInstances: Worker[] = [];
     concurrency = Math.min(16, max, Math.max(1, concurrency));
+
+
     for (let i = 0; i < concurrency; i++) {
       workersInstances.push(altchaCreateWorker(workerurl));
     }
