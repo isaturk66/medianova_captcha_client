@@ -32,7 +32,7 @@ export default defineConfig({
       name: 'altcha',
       formats: ['es'],
     },
-    outDir: 'dist',
+    outDir: 'dist/bundles',
     minify: 'esbuild',
     rollupOptions: {},
   },
