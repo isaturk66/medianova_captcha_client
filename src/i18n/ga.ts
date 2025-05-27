@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Tabhair cuairt ar Altcha.org',
+  ariaLinkLabel: 'Tabhair cuairt ar Medianova.com',
   enterCode: 'Iontráil cód',
   enterCodeAria:
     'Cuir isteach an cód a chloiseann tú. Brúigh Spás chun an fuaime a sheinm.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Tá an fíorú as feidhm. Bain triail eile as.',
   verificationRequired: 'Fíorú riachtanach!',
   footer:
-    'Cosanta ag <a href="https://altcha.org/" target="_blank" aria-label="Tabhair cuairt ar Altcha.org">ALTCHA</a>',
+    'Cosanta ag <a href="https://www.medianova.com/" target="_blank" aria-label="Tabhair cuairt ar Medianova.com">Medianova</a>',
   getAudioChallenge: 'Faigh dúshlán fuaime',
   label: 'Níl mé i mo róbat',
   loading: 'Á luchtú...',

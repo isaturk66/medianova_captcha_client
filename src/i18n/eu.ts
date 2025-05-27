@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Bisitatu Altcha.org',
+  ariaLinkLabel: 'Bisitatu Medianova.com',
   enterCode: 'Sartu kodea',
   enterCodeAria:
     'Sartu entzun duzun kodea. Sakatu Espazioa audioa erreproduzitzeko.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Egiaztatzea iraungi da. Saiatu berriro.',
   verificationRequired: 'Egiaztatzea beharrezkoa da!',
   footer:
-    '<a href="https://altcha.org/" target="_blank" aria-label="Bisitatu Altcha.org">ALTCHA</a>k babestuta',
+    '<a href="https://www.medianova.com/" target="_blank" aria-label="Bisitatu Medianova.com">Medianova</a>k babestuta',
   getAudioChallenge: 'Jaso audio-erronka bat',
   label: 'Ez naiz robot bat',
   loading: 'Kargatzen...',

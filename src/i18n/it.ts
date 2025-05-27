@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Visita Altcha.org',
+  ariaLinkLabel: 'Visita Medianova.com',
   enterCode: 'Inserisci il codice',
   enterCodeAria:
     "Inserisci il codice che senti. Premi Spazio per riprodurre l'audio.",
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Verifica scaduta. Riprova.',
   verificationRequired: 'Verifica richiesta!',
   footer:
-    'Protetto da <a href="https://altcha.org/" target="_blank" aria-label="Visita Altcha.org">ALTCHA</a>',
+    'Protetto da <a href="https://www.medianova.com/" target="_blank" aria-label="Visita Medianova.com">Medianova</a>',
   getAudioChallenge: 'Ottieni una sfida audio',
   label: 'Non sono un robot',
   loading: 'Caricamento...',

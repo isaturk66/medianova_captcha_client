@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Altcha.orgを訪問',
+  ariaLinkLabel: 'Medianova.comを訪問',
   enterCode: 'コードを入力',
   enterCodeAria:
     '聞こえるコードを入力してください。スペースキーを押して音声を再生します。',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: '認証が期限切れです。再試行してください。',
   verificationRequired: '認証が必要です！',
   footer:
-    '保護されています <a href="https://altcha.org/" target="_blank" aria-label="Altcha.orgを訪問">ALTCHA</a>',
+    '保護されています <a href="https://www.medianova.com/" target="_blank" aria-label="Medianova.comを訪問">Medianova</a>',
   getAudioChallenge: '音声チャレンジを取得',
   label: 'ロボットじゃない',
   loading: '読み込み中...',

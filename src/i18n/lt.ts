@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Apsilankykite Altcha.org',
+  ariaLinkLabel: 'Apsilankykite Medianova.com',
   enterCode: 'Įveskite kodą',
   enterCodeAria:
     'Įveskite girdimą kodą. Paspauskite tarpo klavišą, kad grotumėte garso įrašą.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Patvirtinimo laikas baigėsi. Bandykite dar kartą.',
   verificationRequired: 'Reikalingas patvirtinimas!',
   footer:
-    'Apsaugota <a href="https://altcha.org/" target="_blank" aria-label="Apsilankykite Altcha.org">ALTCHA</a>',
+    'Apsaugota <a href="https://www.medianova.com/" target="_blank" aria-label="Apsilankykite Medianova.com">Medianova</a>',
   getAudioChallenge: 'Gauti garso užduotį',
   label: 'Aš nesu robotas',
   loading: 'Įkeliama...',

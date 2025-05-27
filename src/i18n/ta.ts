@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Altcha.org ஐ பார்வையிடவும்',
+  ariaLinkLabel: 'Medianova.com ஐ பார்வையிடவும்',
   enterCode: 'குறியீட்டை உள்ளிடவும்',
   enterCodeAria:
     'நீங்கள் கேட்கும் குறியீட்டை உள்ளிடவும். ஆடியோவை இயக்க Space ஐ அழுத்தவும்.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'சரிபார்ப்பு காலாவதியானது. மீண்டும் முயற்சிக்கவும்.',
   verificationRequired: 'சரிபார்ப்பு தேவை!',
   footer:
-    'மூலமாக பாதுகாக்கப்பட்டவை <a href="https://altcha.org/" target="_blank" aria-label="Altcha.org ஐ பார்வையிடவும்">ALTCHA</a>',
+    'மூலமாக பாதுகாக்கப்பட்டவை <a href="https://www.medianova.com/" target="_blank" aria-label="Medianova.com ஐ பார்வையிடவும்">Medianova</a>',
   getAudioChallenge: 'ஒலி சவாலை பெறவும்',
   label: 'நான் ரோபோடான அல்ல',
   loading: 'செயலாக்கம்...',

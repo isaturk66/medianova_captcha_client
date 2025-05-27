@@ -1,13 +1,13 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Besoek Altcha.org',
+  ariaLinkLabel: 'Besoek Medianova.com',
   enterCode: 'Voer kode in',
   enterCodeAria: 'Voer die kode in wat jy hoor. Druk Spasie om die klank af te speel.',
   error: 'Verifikasie het misluk. Probeer later weer.',
   expired: 'Verifikasie het verval. Probeer weer.',
   footer:
-    'Beskerm deur <a href="https://altcha.org/" target="_blank" aria-label="Besoek Altcha.org">ALTCHA</a>',
+    'Beskerm deur <a href="https://www.medianova.com/" target="_blank" aria-label="Besoek Medianova.com">Medianova</a>',
   getAudioChallenge: 'Kry \'n klankuitdaging',
   label: "Ek is nie 'n robot nie",
   loading: 'Laai...',

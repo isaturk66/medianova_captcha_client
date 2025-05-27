@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Látogass el az Altcha.org oldalra',
+  ariaLinkLabel: 'Látogass el az Medianova.com oldalra',
   enterCode: 'Írja be a kódot',
   enterCodeAria:
     'Írja be a hallott kódot. Nyomja meg a Szóköz billentyűt a hang lejátszásához.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'A hitelesítés lejárt. Próbáld újra.',
   verificationRequired: 'Ellenőrzés szükséges!',
   footer:
-    'Védve a következő által: <a href="https://altcha.org/" target="_blank" aria-label="Látogass el az Altcha.org oldalra">ALTCHA</a>',
+    'Védve a következő által: <a href="https://www.medianova.com/" target="_blank" aria-label="Látogass el az Medianova.com oldalra">Medianova</a>',
   getAudioChallenge: 'Hangalapú kihívás kérése',
   label: 'Nem vagyok robot',
   loading: 'Betöltés...',

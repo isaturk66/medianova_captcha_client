@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Żur Altcha.org',
+  ariaLinkLabel: 'Żur Medianova.com',
   enterCode: 'Idħol il-kodiċi',
   enterCodeAria:
     "Idħol il-kodiċi li tisma'. Agħfas Spazju biex tindaqq l-awdjo.",
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Il-verifika skadiet. Erġa’ pprova.',
   verificationRequired: 'Verifika meħtieġa!',
   footer:
-    'Protett minn <a href="https://altcha.org/" target="_blank" aria-label="Żur Altcha.org">ALTCHA</a>',
+    'Protett minn <a href="https://www.medianova.com/" target="_blank" aria-label="Żur Medianova.com">Medianova</a>',
   getAudioChallenge: 'Ikseb sfida bl-awdjo',
   label: 'M’inix robot',
   loading: 'Qed jitgħabba...',

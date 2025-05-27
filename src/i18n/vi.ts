@@ -1,14 +1,14 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Truy cập Altcha.org',
+  ariaLinkLabel: 'Truy cập Medianova.com',
   enterCode: 'Nhập mã',
   enterCodeAria: 'Nhập mã bạn nghe được. Nhấn Phím cách để phát âm thanh.',
   error: 'Xác minh thất bại. Vui lòng thử lại sau.',
   expired: 'Xác minh đã hết hạn. Vui lòng thử lại.',
   verificationRequired: 'Yêu cầu xác minh!',
   footer:
-    'Được bảo vệ bởi <a href="https://altcha.org/" target="_blank" aria-label="Truy cập Altcha.org">ALTCHA</a>',
+    'Được bảo vệ bởi <a href="https://www.medianova.com/" target="_blank" aria-label="Truy cập Medianova.com">Medianova</a>',
   getAudioChallenge: 'Nhận thử thách âm thanh',
   label: 'Tôi không phải là robot',
   loading: 'Đang tải...',

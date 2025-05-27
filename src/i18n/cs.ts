@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: 'Navštivte Altcha.org',
+  ariaLinkLabel: 'Navštivte Medianova.com',
   enterCode: 'Zadejte kód',
   enterCodeAria:
     'Zadejte kód, který slyšíte. Stisknutím mezerníku přehrajete zvuk.',
@@ -9,7 +9,7 @@ export const i18n = {
   expired: 'Ověření vypršelo. Zkuste to prosím znovu.',
   verificationRequired: 'Vyžaduje se ověření!',
   footer:
-    'Chráněno pomocí <a href="https://altcha.org/" target="_blank" aria-label="Navštivte Altcha.org">ALTCHA</a>',
+    'Chráněno pomocí <a href="https://www.medianova.com/" target="_blank" aria-label="Navštivte Medianova.com">Medianova</a>',
   getAudioChallenge: 'Získat audio výzvu',
   label: 'Nejsem robot',
   loading: 'Načítání...',
