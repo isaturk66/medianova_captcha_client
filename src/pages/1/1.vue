@@ -11,10 +11,6 @@
     />
       <!-- Change This url -->
 
-    <div class="buttons">
-      <button type="submit">Submit</button>
-      <button type="reset">Reset</button>
-    </div>
   </form>
 </template>
 
