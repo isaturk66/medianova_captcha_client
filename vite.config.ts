@@ -30,7 +30,7 @@ export default defineConfig({
     lib: {
       entry: 'src/entry.ts',
       name: 'altcha',
-      formats: ['es', 'umd'],
+      formats: ['es'],
     },
     outDir: 'dist',
     minify: 'esbuild',

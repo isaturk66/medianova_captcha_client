@@ -39,7 +39,7 @@ export default defineConfig({
       entry: input,
       fileName: '[name]',
       name: '[name]',
-      formats: ['es', 'umd'],
+      formats: ['es'],
     },
     rollupOptions: {},
   },
