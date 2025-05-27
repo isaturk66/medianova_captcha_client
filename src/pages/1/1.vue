@@ -6,8 +6,6 @@
     <altcha-widget
       id="altcha"
       debug
-      mockerror="true"
-
       challengeurl="/captcha/1/challenge"
       verifyurl="/captcha/1/challenge"
     />
