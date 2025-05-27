@@ -5,8 +5,8 @@ import fs from 'fs';
 
 function externalAltcha(): Plugin {
   const externals = new Set([
-    '/bundles/altcha.js',
-    '/bundles/altcha.i18n.js',
+    '/captcha/bundles/altcha.js',
+    '/captcha/bundles/altcha.i18n.js',
   ]);
   return {
     name: 'external-altcha',
@@ -54,6 +54,9 @@ function copyHtmlToRoot(): Plugin {
 }
 
 export default defineConfig({
+
+  base: '/captcha/',   // keep dev server happy
+
   plugins: [
     vue(),
     externalAltcha(),

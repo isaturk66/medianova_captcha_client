@@ -6,8 +6,10 @@
     <altcha-widget
       id="altcha"
       debug
+      mockerror="true"
 
-      challengeurl="http://localhost/captcha/1/challenge"
+      challengeurl="/captcha/1/challenge"
+      verifyurl="/captcha/1/challenge"
     />
       <!-- Change This url -->
 
