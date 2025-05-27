@@ -9,6 +9,8 @@
     <!-- Vite will transform this entry on the fly -->
     <script type="module" src="/src/main.ts"></script>
 
+    <!-- <script async defer src="./dist/altcha.js" type="module"></script> -->
+
     <style>
         body {
             font-family: system-ui, sans-serif;
@@ -36,7 +38,7 @@
 
             <!-- Your custom element lives here -->
             <altcha-widget id="altcha" challengeurl="http://localhost/captcha/1/challenge"
-                hidefooter="true" ></altcha-widget>
+                hidefooter="false" ></altcha-widget>
 
             <div class="buttons">
                 <button type="submit">Submit</button>

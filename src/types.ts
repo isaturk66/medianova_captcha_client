@@ -25,16 +25,10 @@ export interface Configure {
   delay?: number;
   disableautofocus?: boolean;
   expire?: number;
-  floating?: 'auto' | 'top' | 'bottom';
-  floatinganchor?: string;
-  floatingoffset?: number;
-  hidefooter?: boolean;
-  hidelogo?: boolean;
   language?: string;
   maxnumber?: number;
   mockerror?: boolean;
   name?: string;
-  obfuscated?: string;
   refetchonexpire?: boolean;
   strings?: Partial<Strings> | string;
   test?: boolean | number | 'delay';
@@ -92,7 +86,6 @@ export interface ClarifySolution {
 
 export interface PluginContext {
   el: HTMLElement;
-  clarify(): Promise<void>;
   dispatch: <T>(event: string, detail?: T) => void;
   getConfiguration(): Configure;
   getState(): State;

@@ -3,9 +3,6 @@
     tag: 'altcha-widget',
     shadow: 'none',
     props: {
-      blockspam: {
-        type: 'Boolean',
-      },
       debug: {
         type: 'Boolean',
       },
@@ -17,12 +14,6 @@
       },
       expire: {
         type: 'Number',
-      },
-      hidefooter: {
-        type: 'Boolean',
-      },
-      hidelogo: {
-        type: 'Boolean',
       },
       maxnumber: {
         type: 'Number',
@@ -48,8 +39,6 @@
   import {
     solveChallenge,
     createTestChallenge,
-    getTimeZone,
-    clarifyData,
   } from './helpers';
   import type { Plugin } from './plugin';
   import { State } from './types';
@@ -58,8 +47,6 @@
     type Payload,
     type Challenge,
     type Solution,
-    type Obfuscated,
-    type ClarifySolution,
     type PluginContext,
     type CustomFetchFunction,
     AudioState,
@@ -78,15 +65,11 @@
     delay?: number;
     disableautofocus?: boolean;
     expire?: number | undefined;
-    hidefooter?: boolean;
-    hidelogo?: boolean;
     id?: string;
     language?: string | undefined;
     name?: string;
     maxnumber?: number;
     mockerror?: boolean;
-    obfuscated?: string | undefined;
-    plugins?: string | undefined;
     refetchonexpire?: boolean;
 
     strings?: string | undefined;
@@ -106,15 +89,11 @@
     delay = 0,
     disableautofocus = false,
     expire = undefined,
-    hidefooter = false,
-    hidelogo = false,
     id = undefined,
     language = undefined,
     name = 'altcha',
     maxnumber = 1e6,
     mockerror = false,
-    obfuscated = undefined,
-    plugins = undefined,
     refetchonexpire = true,
     strings = undefined,
     test = false,
@@ -126,7 +105,7 @@
   const { altchaI18n } = globalThis;
   const altchaI18nStore = altchaI18n.store;
   const allowedAlgs = ['SHA-256', 'SHA-384', 'SHA-512'];
-  const website = 'https://altcha.org/';
+  const website = 'https://www.medianova.com/';
   const dispatch = <T,>(event: string, detail?: T) => {
     $host().dispatchEvent(
       new CustomEvent(event, {
@@ -155,10 +134,8 @@
   } | null = $state(null);
   let currentState: State = $state(State.UNVERIFIED);
   let el: HTMLElement = $state()!;
-  let elAnchorArrow: HTMLElement | null = $state(null);
   let elAudio: HTMLAudioElement | null = $state(null);
   let elCheckbox: HTMLInputElement | null = $state(null);
-  let elFloatingAnchor: HTMLElement | null = $state(null);
   let elForm: HTMLFormElement | null = $state(null);
   let error: string | null = $state(null);
   let expireTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -194,15 +171,15 @@
   onMount(() => {
     log('mounted', ALTCHA_VERSION);
     log('workers', workers);
-    loadPlugins();
-    log(
-      'plugins',
-      loadedPlugins.length
-        ? loadedPlugins
-            .map((plugin) => (plugin.constructor as any).pluginName)
-            .join(', ')
-        : 'none'
-    );
+    //loadPlugins();
+    // log(
+    //   'plugins',
+    //   loadedPlugins.length
+    //     ? loadedPlugins
+    //         .map((plugin) => (plugin.constructor as any).pluginName)
+    //         .join(', ')
+    //     : 'none'
+    // );
     if (test) {
       log('using test mode');
     }
@@ -224,11 +201,9 @@
       }
     }
     if (auto === 'onload') {
-      if (obfuscated) {
-        clarify();
-      } else {
+      
         verify();
-      }
+      
     }
 
     requestAnimationFrame(() => {
@@ -386,32 +361,6 @@
   }
 
   /**
-   * Get all text field values for the Spam Filter.
-   */
-  function getTextFields(names?: string[]) {
-    const elInputs = [
-      ...(elForm?.querySelectorAll(
-        names?.length
-          ? names.map((name) => `input[name="${name}"]`).join(', ')
-          : 'input[type="text"]:not([data-no-spamfilter]), textarea:not([data-no-spamfilter])'
-      ) || []),
-    ] as HTMLInputElement[];
-    return elInputs.reduce(
-      (acc, el) => {
-        const name = el.name;
-        const value = el.value;
-        if (name && value) {
-          acc[name] = /\n/.test(value)
-            ? value.replace(/(?<!\r)\n/g, '\r\n')
-            : value;
-        }
-        return acc;
-      },
-      {} as Record<string, string>
-    );
-  }
-
-  /**
    * Get the full URL based on the origin uri of the challengeurl.
    */
   function getServerUrl(
@@ -436,28 +385,27 @@
   /**
    * Loads the registered plugins.
    */
-  function loadPlugins() {
-    const enabledPlugins =
-      plugins !== undefined ? plugins.split(',') : undefined;
-    for (const Plugin of globalThis.altchaPlugins) {
-      if (!enabledPlugins || enabledPlugins.includes(Plugin.pluginName)) {
-        loadedPlugins.push(
-          new Plugin({
-            el,
-            clarify,
-            dispatch,
-            getConfiguration,
-            getState,
-            log,
-            reset,
-            solve,
-            setState,
-            verify,
-          } satisfies PluginContext)
-        );
-      }
-    }
-  }
+  // function loadPlugins() {
+  //   const enabledPlugins =
+  //     plugins !== undefined ? plugins.split(',') : undefined;
+  //   for (const Plugin of globalThis.altchaPlugins) {
+  //     if (!enabledPlugins || enabledPlugins.includes(Plugin.pluginName)) {
+  //       loadedPlugins.push(
+  //         new Plugin({
+  //           el,
+  //           dispatch,
+  //           getConfiguration,
+  //           getState,
+  //           log,
+  //           reset,
+  //           solve,
+  //           setState,
+  //           verify,
+  //         } satisfies PluginContext)
+  //       );
+  //     }
+  //   }
+  // }
 
   /**
    * Logs debug information to the console.
@@ -602,9 +550,7 @@
     ) {
       if (elForm?.reportValidity() === false) {
         checked = false;
-      } else if (obfuscated) {
-        clarify();
-      } else {
+      }  else {
         verify();
       }
     } else {
@@ -779,11 +725,11 @@
     }
   }
 
-  async function solve(data: Challenge | Obfuscated): Promise<{
-    data: Challenge | Obfuscated;
-    solution: Solution | ClarifySolution | null;
+  async function solve(data: Challenge): Promise<{
+    data: Challenge ;
+    solution: Solution | null;
   }> {
-    let solution: Solution | ClarifySolution | null = null;
+    let solution: Solution  | null = null;
     if ('Worker' in window) {
       try {
         solution = await solveWorkers(
@@ -793,23 +739,12 @@
       } catch (err) {
         log(err);
       }
-      if (solution?.number !== undefined || 'obfuscated' in data) {
+      if (solution?.number !== undefined ) {
         return {
           data,
           solution,
         };
       }
-    }
-    if ('obfuscated' in data) {
-      const solution = await clarifyData(
-        data.obfuscated,
-        data.key,
-        data.maxNumber || data.maxnumber
-      );
-      return {
-        data,
-        solution: await solution.promise,
-      };
     }
     return {
       data,
@@ -823,7 +758,7 @@
   }
 
   async function solveWorkers(
-    challenge: Challenge | Obfuscated,
+    challenge: Challenge,
     max: number = typeof test === 'number'
       ? test
       : challenge.maxNumber || challenge.maxnumber || maxnumber,
@@ -865,43 +800,16 @@
   }
 
   /**
-   * Clarifies the data by verifying obfuscated information.
-   */
-  export async function clarify() {
-    if (!obfuscated) {
-      setState(State.ERROR);
-      return;
-    }
-    const plugin = loadedPlugins.find(
-      (p) => (p.constructor as any).pluginName === 'obfuscation'
-    );
-    if (!plugin || !('clarify' in plugin)) {
-      setState(State.ERROR);
-      log(
-        'Plugin `obfuscation` not found. Import `altcha/plugins/obfuscation` to load it.'
-      );
-      return;
-    }
-    if ('clarify' in plugin && typeof plugin.clarify === 'function') {
-      return plugin.clarify();
-    }
-  }
-
-  /**
    * Programmatically configure the widget with given options.
    */
   export function configure(options: Configure) {
-    if (options.obfuscated !== undefined) {
-      obfuscated = options.obfuscated;
-    }
+
     if (options.auto !== undefined) {
       auto = options.auto;
       if (auto === 'onload') {
-        if (obfuscated) {
-          clarify();
-        } else {
+        
           verify();
-        }
+        
       }
     }
     if (options.customfetch !== undefined) {
@@ -927,12 +835,7 @@
     if (options.debug !== undefined) {
       debug = !!options.debug;
     }
-    if (options.hidefooter !== undefined) {
-      hidefooter = !!options.hidefooter;
-    }
-    if (options.hidelogo !== undefined) {
-      hidelogo = !!options.hidelogo;
-    }
+
     if (options.language !== undefined) {
       strings = getI18nStrings($altchaI18nStore, [options.language]);
     }
@@ -970,21 +873,18 @@
   }
 
   /**
-   * Get the current configuration options.
+   * Get the current configuration options. This is wrong.
    */
   export function getConfiguration(): Configure {
     return {
-      auto,
+       auto,
       challengeurl,
       debug,
       delay,
       expire,
-      hidefooter,
-      hidelogo,
       name,
       maxnumber,
       mockerror,
-      obfuscated,
       refetchonexpire,
       strings: _strings,
       test,
@@ -1161,7 +1061,6 @@
       <input type="hidden" {name} value={payload} />
     {/if}
 
-    {#if hidelogo !== true}
       <div>
         <a
           href={website}
@@ -1214,7 +1113,6 @@
           </svg>
         </a>
       </div>
-    {/if}
 
     {#if codeChallenge?.challenge.codeChallenge}
       <div
@@ -1390,7 +1288,7 @@
     </div>
   {/if}
 
-  {#if _strings.footer && hidefooter !== true}
+  {#if _strings.footer}
     <div class="altcha-footer">
       <div>{@html _strings.footer}</div>
     </div>
