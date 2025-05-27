@@ -16,7 +16,7 @@ export interface Strings {
 }
 
 export interface Configure {
-  auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit';
+  mode?: 'non-interactive' | 'semi-interactive' | 'interactive';
   challenge?: Challenge | string;
   challengeurl?: string;
   credentials?: 'omit' | 'same-origin' | 'include' | boolean | undefined;

@@ -55,8 +55,7 @@
   import { load as loadBotd, type BotDetectionResult } from '@fingerprintjs/botd';
   
   interface Props {
-    auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit' | undefined;
-
+    mode?: 'non-interactive' | 'semi-interactive' | 'interactive';
     challengeurl?: string | undefined;
     debug?: boolean;
     delay?: number;
@@ -77,7 +76,7 @@
   }
 
   let {
-    auto = undefined,
+    mode = 'semi-interactive',
     challengeurl = undefined,
     debug = false,
     delay = 0,
@@ -165,8 +164,8 @@
     if (expire) {
       setExpire(expire);
     }
-    if (auto !== undefined) {
-      log('auto', auto);
+    if (mode !== undefined) {
+      log('mode', mode);
     }
    
     elForm = el?.closest('form');
@@ -175,11 +174,8 @@
         capture: true,
       });
       elForm.addEventListener('reset', onFormReset);
-      if (auto === 'onfocus') {
-        elForm.addEventListener('focusin', onFormFocusIn);
-      }
     }
-    if (auto === 'onload') {
+    if (mode === 'non-interactive') {
       
         verify();
       
@@ -520,21 +516,6 @@
       // Submit event from the code-challenge form -> don't handle
       return;
     }
-    if (elForm && auto === 'onsubmit') {
-      if (currentState === State.UNVERIFIED) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        verify().then(() => {
-          requestSubmit(submitter);
-        });
-      } else if (currentState !== State.VERIFIED) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (currentState === State.VERIFYING) {
-          onInvalid();
-        }
-      }
-    }
   }
 
   /**
@@ -738,12 +719,10 @@
    */
   export function configure(options: Configure) {
 
-    if (options.auto !== undefined) {
-      auto = options.auto;
-      if (auto === 'onload') {
-        
-          verify();
-        
+    if (options.mode !== undefined) {
+      mode  = options.mode;
+      if (mode === 'non-interactive') {
+        verify();
       }
     }
 
@@ -803,7 +782,7 @@
    */
   export function getConfiguration(): Configure {
     return {
-       auto,
+       mode,
       challengeurl,
       debug,
       delay,
@@ -995,7 +974,6 @@
         bind:this={elCheckbox}
         type="checkbox"
         id={widgetId}
-        required={auto !== 'onsubmit' }
         bind:checked
         onchange={onCheckedChange}
         oninvalid={onInvalid}
