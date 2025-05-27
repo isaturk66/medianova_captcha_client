@@ -1,7 +1,7 @@
 import '../globals';
 
 export const i18n = {
-  ariaLinkLabel: "Medianova.com'yu ziyaret edin",
+  ariaLinkLabel: "Medianova.com'u ziyaret edin",
   enterCode: 'Kodu girin',
   enterCodeAria:
     'Duyduğunuz kodu girin. Ses dosyasını oynatmak için Boşluk tuşuna basın.',
@@ -11,7 +11,7 @@ export const i18n = {
   footer:
     'Medianova tarafından korunuyor <a href="https://www.medianova.com/" target="_blank" aria-label="Medianova.com\'yu ziyaret edin">Medianova</a>',
   getAudioChallenge: 'Sesli doğrulama al',
-  label: 'Ben robot değilim',
+  label: 'Robot değilim',
   loading: 'Yükleniyor...',
   reload: 'Yeniden yükle',
   verify: 'Doğrula',
