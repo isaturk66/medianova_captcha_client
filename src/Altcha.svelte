@@ -47,7 +47,6 @@
     type Payload,
     type Challenge,
     type Solution,
-    type PluginContext,
     type CustomFetchFunction,
     AudioState,
   } from './types';
@@ -171,15 +170,6 @@
   onMount(() => {
     log('mounted', ALTCHA_VERSION);
     log('workers', workers);
-    //loadPlugins();
-    // log(
-    //   'plugins',
-    //   loadedPlugins.length
-    //     ? loadedPlugins
-    //         .map((plugin) => (plugin.constructor as any).pluginName)
-    //         .join(', ')
-    //     : 'none'
-    // );
     if (test) {
       log('using test mode');
     }
@@ -381,32 +371,6 @@
     }
     return result.toString();
   }
-
-  /**
-   * Loads the registered plugins.
-   */
-  // function loadPlugins() {
-  //   const enabledPlugins =
-  //     plugins !== undefined ? plugins.split(',') : undefined;
-  //   for (const Plugin of globalThis.altchaPlugins) {
-  //     if (!enabledPlugins || enabledPlugins.includes(Plugin.pluginName)) {
-  //       loadedPlugins.push(
-  //         new Plugin({
-  //           el,
-  //           dispatch,
-  //           getConfiguration,
-  //           getState,
-  //           log,
-  //           reset,
-  //           solve,
-  //           setState,
-  //           verify,
-  //         } satisfies PluginContext)
-  //       );
-  //     }
-  //   }
-  // }
-
   /**
    * Logs debug information to the console.
    */
