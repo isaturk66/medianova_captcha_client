@@ -31,7 +31,7 @@ export default defineConfig({
     lib: {
       entry: 'src/entry-i18n.ts',
       name: 'altcha-i18n',
-      formats: ['es', 'umd'],
+      formats: ['es'],
       fileName: (format) => `altcha.i18n${format === 'es' ? '' : `.${format}`}.js`,
     },
     outDir: 'dist',
