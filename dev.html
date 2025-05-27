@@ -7,10 +7,10 @@
     <title>Altcha-Lite Dev</title>
 
     <!-- Vite will transform this entry on the fly -->
-    <!-- <script type="module" src="/src/entry-i18n.ts"></script> -->
+    <script type="module" src="/src/entry-i18n.ts"></script>
 
     <!-- 2. all translations in one go -->
-    <script async defer src="./dist/altcha.i18n.js" type="module"></script>
+    <!-- <script async defer src="./dist/altcha.i18n.js" type="module"></script> -->
 
 
     <style>
@@ -40,7 +40,8 @@
 
             <!-- Your custom element lives here -->
             <altcha-widget id="altcha"
- debug="true" challengeurl="http://localhost/captcha/1/challenge"></altcha-widget>
+            mockerror="true"
+ debug="true" challengeurl="http://localhost:8080/http://localhost/captcha/1/challenge"></altcha-widget>
 
             <div class="buttons">
                 <button type="submit">Submit</button>

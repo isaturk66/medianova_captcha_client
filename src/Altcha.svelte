@@ -51,6 +51,9 @@
   import './globals';
   import './i18n/en';
 
+  //import botd load
+  import { load as loadBotd, type BotDetectionResult } from '@fingerprintjs/botd';
+  
   interface Props {
     auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit' | undefined;
 
@@ -186,6 +189,24 @@
       dispatch('load');
     });
   });
+
+
+  /**
+   * 
+  */
+  let botdPromise: Promise<BotDetectionResult> | null = null;
+  async function getBotdResult(): Promise<BotDetectionResult | null> {
+    try {
+      if (!botdPromise) {
+        botdPromise = loadBotd().then((agent) => agent.detect());
+      }
+      return await botdPromise;
+    } catch (err) {
+      log('BotD error', err);
+      return null;
+    }
+  }
+
 
   /**
    * Creates a Base64-encoded payload with solution.
@@ -556,8 +577,16 @@
    * Handles changes in the state and updates the UI accordingly.
    */
   function onStateChangeHandler(_: typeof currentState) {
+
+    log('onStateChangeHandler triggered', currentState);
     
     checked = currentState === State.VERIFIED;
+
+    if(currentState === State.ERROR || currentState === State.EXPIRED){
+      log('resetting state due to error or expiration');
+          submitChallenge("failure");
+    }
+
   }
 
 
@@ -896,6 +925,7 @@
           log('verified');
           tick().then(() => {
             dispatch('verified', { payload });
+            submitChallenge(payload!);
           });
         }
       })
@@ -904,6 +934,46 @@
         setState(State.ERROR, err.message);
       });
   }
+
+
+  async function submitChallenge(payload: string) {
+   const botd = await getBotdResult();
+   const url   = verifyurl || challengeurl;
+   if (!url) return;
+
+   const body = JSON.stringify({
+     ...(botd ? { botd: botd.bot ? 1 : 0 } : {}),
+     altcha: payload,
+   });
+
+   try {
+     const resp = await fetch(url, {
+       method: 'POST',
+       credentials: 'same-origin',
+       headers: { 'Content-Type': 'application/json' },
+       body,
+     });
+
+      log('submitChallenge response', resp);
+      log('submitChallenge response body', body);
+      log('submitChallenge response url', resp.url);
+      log('submitChallenge response status', resp.redirected);
+
+     if (resp.status === 204) {
+       location.reload();
+       return;
+     }
+     if (resp.redirected) {
+       location.replace(resp.url);
+       return;
+     }
+     if (!resp.ok) {
+       throw new Error(`Unexpected response ${resp.status}`);
+     }
+   } catch (err) {
+     log(err);
+   }
+ }
 </script>
 
 <slot />
