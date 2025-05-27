@@ -40,14 +40,12 @@
     solveChallenge,
     createTestChallenge,
   } from './helpers';
-  import type { Plugin } from './plugin';
   import { State } from './types';
   import {
     type Configure,
     type Payload,
     type Challenge,
     type Solution,
-    type CustomFetchFunction,
     AudioState,
   } from './types';
   import './globals';
@@ -55,11 +53,8 @@
 
   interface Props {
     auto?: 'off' | 'onfocus' | 'onload' | 'onsubmit' | undefined;
-    /** @deprecated */
+
     challengeurl?: string | undefined;
-    challengejson?: string | undefined;
-    credentials?: 'omit' | 'same-origin' | 'include' | boolean | undefined;
-    customfetch?: string | CustomFetchFunction | undefined;
     debug?: boolean;
     delay?: number;
     disableautofocus?: boolean;
@@ -81,9 +76,6 @@
   let {
     auto = undefined,
     challengeurl = undefined,
-    challengejson = undefined,
-    credentials = undefined,
-    customfetch = undefined,
     debug = false,
     delay = 0,
     disableautofocus = false,
@@ -112,11 +104,8 @@
       })
     );
   };
-  const documentLocale = document.documentElement.lang?.split('-')?.[0];
 
-  const parsedChallengeJson = $derived(
-    challengejson ? parseJsonAttribute(challengejson) : undefined
-  );
+
   const parsedStrings = $derived(strings ? parseJsonAttribute(strings) : {});
   const _strings = $derived({
     ...getI18nStrings($altchaI18nStore),
@@ -140,12 +129,10 @@
   let expireTimeout: ReturnType<typeof setTimeout> | null = null;
   let codeChallengeAudioState: AudioState | null = $state(null);
   let codeChallengeSubmitting: boolean = $state(false);
-  let loadedPlugins: Plugin[] = [];
   let playCodeChallengeAudio: boolean = $state(false);
   let payload: string | null = $state(null);
 
   $effect(() => {
-    onErrorChangeHandler(error);
   });
 
   $effect(() => {
@@ -153,7 +140,6 @@
   });
 
   onDestroy(() => {
-    destroyPlugins();
     if (elForm) {
       elForm.removeEventListener('submit', onFormSubmit);
       elForm.removeEventListener('reset', onFormReset);
@@ -218,14 +204,6 @@
     );
   }
 
-  /**
-   * Destroys all loaded plugins.
-   */
-  function destroyPlugins() {
-    for (const plugin of loadedPlugins) {
-      plugin.destroy();
-    }
-  }
 
   /**
    * Sets the state to EXPIRED or re-fetches the challenge if `refetchonexpire` is enabled.
@@ -246,10 +224,7 @@
     if (mockerror) {
       log('mocking error');
       throw new Error('Mocked error.');
-    } else if (parsedChallengeJson) {
-      log('using provided json data');
-      return parsedChallengeJson;
-    } else if (test) {
+    }  else if (test) {
       log('generating test challenge', { test });
       return createTestChallenge(typeof test !== 'boolean' ? +test : undefined);
     } else {
@@ -265,10 +240,9 @@
       }
       log('fetching challenge from', challengeurl);
       const init: RequestInit = {
-        credentials: typeof credentials === 'boolean' ? 'include' : credentials,
         headers: {},
       };
-      const resp = await getFetchFunction()(challengeurl, init);
+      const resp = await fetch(challengeurl, init);
       if (!resp || resp instanceof Response === false) {
         throw new Error(`Custom fetch function did not return a response.`);
       }
@@ -303,25 +277,6 @@
     }
   }
 
-  /**
-   * Get the custom `fetch` function if configured or return the default one.
-   */
-  function getFetchFunction() {
-    let fetchFunction: CustomFetchFunction = fetch;
-    if (customfetch) {
-      log('using customfetch');
-      if (typeof customfetch === 'string') {
-        fetchFunction =
-          globalThis[customfetch as keyof typeof globalThis] || null;
-        if (!fetchFunction) {
-          throw new Error(`Custom fetch function not found: ${customfetch}`);
-        }
-      } else {
-        fetchFunction = customfetch;
-      }
-    }
-    return fetchFunction;
-  }
 
   /**
    * Get internalization strings based on the language preferences provided
@@ -522,20 +477,6 @@
     }
   }
 
-
-
-
-  /**
-   * Handles changes in the error state and notifies plugins.
-   */
-  function onErrorChangeHandler(_: typeof error) {
-    for (const plugin of loadedPlugins) {
-      if (typeof plugin.onErrorChange === 'function') {
-        plugin.onErrorChange(error);
-      }
-    }
-  }
-
   /**
    * Handles the form focus-in event.
    */
@@ -615,11 +556,6 @@
    * Handles changes in the state and updates the UI accordingly.
    */
   function onStateChangeHandler(_: typeof currentState) {
-    for (const plugin of loadedPlugins) {
-      if (typeof plugin.onStateChange === 'function') {
-        plugin.onStateChange(currentState);
-      }
-    }
     
     checked = currentState === State.VERIFIED;
   }
@@ -776,9 +712,7 @@
         
       }
     }
-    if (options.customfetch !== undefined) {
-      customfetch = options.customfetch;
-    }
+
     if (options.delay !== undefined) {
       delay = options.delay;
     }
@@ -786,13 +720,7 @@
       setExpire(options.expire);
       expire = options.expire;
     }
-    if (options.challenge) {
-      challengejson =
-        typeof options.challenge === 'string'
-          ? options.challenge
-          : JSON.stringify(options.challenge);
-      validateChallenge(parsedChallengeJson);
-    }
+   
     if (options.challengeurl !== undefined) {
       challengeurl = options.challengeurl;
     }
@@ -856,16 +784,6 @@
       workers,
       workerurl,
     };
-  }
-
-
-  /**
-   * Get a loaded plugin by it's name.
-   */
-  export function getPlugin(name: string) {
-    return loadedPlugins.find(
-      (plugin) => (plugin.constructor as any).pluginName === name
-    );
   }
 
   /**
