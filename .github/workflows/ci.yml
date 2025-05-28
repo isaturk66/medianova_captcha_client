@@ -1,0 +1,60 @@
+name: build-and-package
+
+on:
+  push:
+    branches: [main]      # adjust as needed
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     # needed so the version-bump action can push back
+      packages: write     # if you ever publish to npm/GHCR
+    steps:
+    # 1) check-out code
+    - uses: actions/checkout@v4
+
+    # 2) pick Node version from .nvmrc or set it explicitly
+    - name: Setup Node
+      uses: actions/setup-node@v4   # Node-20-based runner 
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
+
+    # 3) dependency install + build
+    - run: npm ci
+    - run: npm run build
+
+    # 4) ⬆️  bump package.json + create git tag (defaults to patch if no feat/fix/breaking in commits)
+    - name: Bump version & tag
+      id: bump
+      uses: phips28/gh-action-bump-version@v11   # automated semver 
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # 5) read the (now-bumped) version number for later steps
+    - name: Read version
+      id: pkg
+      run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
+    # 6) zip ONLY the files inside dist/, not the folder itself
+    - name: Zip dist contents
+      run: |
+        cd dist
+        zip -r ../build-${{ steps.pkg.outputs.version }}.zip .
+
+    # 7) keep the archive as a workflow artifact
+    - uses: actions/upload-artifact@v4         # v4 = faster, resumable 
+      with:
+        name: build-${{ steps.pkg.outputs.version }}.zip
+        path: build-${{ steps.pkg.outputs.version }}.zip
+
+    # 8) (optional) turn that tag into a GitHub Release with the zip attached
+    - name: Publish GitHub release
+      if: steps.bump.outputs.newTag != '' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.bump.outputs.newTag }}
+        name: Release ${{ steps.bump.outputs.newTag }}
+        files: build-${{ steps.pkg.outputs.version }}.zip
