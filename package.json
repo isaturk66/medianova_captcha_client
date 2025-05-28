@@ -1,7 +1,7 @@
 {
   "name": "altcha",
   "description": "Privacy-first CAPTCHA widget, compliant with global regulations (GDPR/HIPAA/CCPA/LGDP/DPDPA/PIPL) and WCAG accessible. No tracking, self-verifying.",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "license": "MIT",
   "author": {
     "name": "Daniel Regeci",
@@ -74,11 +74,10 @@
     }
   },
   "scripts": {
-    "dev:widget": "vite build -c vite.bundle-i18n.config.ts --watch",       
-    "dev:pages" : "vite --config vite.pages.config.ts",
-    "dev:proxy" : "bash ./cors-proxy.sh",
-    "dev"       : "concurrently -k -n WIDGET,PAGES,PROXY \"npm:dev:widget\" \"npm:dev:pages\" \"npm:dev:proxy\"",
-
+    "dev:widget": "vite build -c vite.bundle-i18n.config.ts --watch",
+    "dev:pages": "vite --config vite.pages.config.ts",
+    "dev:proxy": "bash ./cors-proxy.sh",
+    "dev": "concurrently -k -n WIDGET,PAGES,PROXY \"npm:dev:widget\" \"npm:dev:pages\" \"npm:dev:proxy\"",
     "build": "rm -rf dist && npm run build:i18n && npm run build:pages",
     "build:widget": "vite build",
     "build:i18n": "vite build -c vite.bundle-i18n.config.ts",
