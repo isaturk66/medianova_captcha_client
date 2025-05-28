@@ -929,13 +929,11 @@
        location.reload();
        return;
      }
-     if (resp.redirected) {
-       location.replace(resp.url);
-
-       throw new Error(
-         `Server faied to verify the challenge.`
-       );
+     
+     if (resp.status === 403) {
+       throw new Error('Sorry, we are unable to verify you at this time.');
      }
+
      if (!resp.ok) {
        throw new Error(`Unexpected response ${resp.status}`);
      }
