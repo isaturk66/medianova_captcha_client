@@ -18,6 +18,9 @@
   </form>
 </template>
 
+<!-- This section demonstrates how the state of the Altcha Widget can be used to change state at vue side.
+This will need to be used for at least handling the "error" state which means the verification failed for a user.  -->
+
 <script setup lang="ts">
 import { ref } from 'vue';
 

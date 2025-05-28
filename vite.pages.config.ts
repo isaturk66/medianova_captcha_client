@@ -26,13 +26,7 @@ function copyHtmlToRoot(): Plugin {
           dest: '1.html',
           script: './1.ts',
           correctedScript: './src/pages/1/1.ts',
-        },
-        {
-          src: 'src/pages/failure/failure.html',
-          dest: 'failure.html',
-          script: './failure.ts',
-          correctedScript: './src/pages/failure/failure.ts',
-        },
+        }
       ];
 
       for (const { src, dest, script, correctedScript } of pages) {
@@ -45,7 +39,7 @@ function copyHtmlToRoot(): Plugin {
     },
 
     closeBundle() {
-      const tempFiles = ['1.html', 'failure.html'];
+      const tempFiles = ['1.html'];
       for (const file of tempFiles) {
         fs.unlinkSync(resolve(__dirname, file));
       }
@@ -69,8 +63,7 @@ export default defineConfig({
 
     rollupOptions: {
       input: {
-        '1': resolve(__dirname, '1.html'),
-        'failure': resolve(__dirname, 'failure.html'),
+        '1': resolve(__dirname, '1.html')
       },
       output: {
         entryFileNames: 'bundles/[name].js',
