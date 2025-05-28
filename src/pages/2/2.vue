@@ -6,7 +6,7 @@
     <!-- Altcha widget emits `statechange` → update `status` -->
     <altcha-widget
       id="altcha"
-      mode="non-interactive"
+      mode="semi-interactive"
       :debug="isDev"
       :challengeurl="challengeUrl"
       :verifyurl="verifyUrl"
@@ -25,7 +25,7 @@
 /* ──────────────────────────────
    CRITICAL: build-time env vars, do not edit.
    ────────────────────────────── */
-const version = "1"; // Hardcoded version for this page
+const version = "2"; // Hardcoded version for this page
 
 const challengeUrlRAW = import.meta.env.VITE_CHALLENGE_URL;
 const verifyUrlRAW    = import.meta.env.VITE_VERIFY_URL;

@@ -26,7 +26,15 @@ function copyHtmlToRoot(): Plugin {
           dest: '1.html',
           script: './1.ts',
           correctedScript: './src/pages/1/1.ts',
+        },
+        {
+          src: 'src/pages/2/2.html',
+          dest: '2.html',
+          script: './2.ts',
+          correctedScript: './src/pages/2/2.ts',
         }
+
+
       ];
 
       for (const { src, dest, script, correctedScript } of pages) {
@@ -39,7 +47,7 @@ function copyHtmlToRoot(): Plugin {
     },
 
     closeBundle() {
-      const tempFiles = ['1.html'];
+      const tempFiles = ['1.html', '2.html'];
       for (const file of tempFiles) {
         fs.unlinkSync(resolve(__dirname, file));
       }
@@ -49,15 +57,23 @@ function copyHtmlToRoot(): Plugin {
 
 export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production';
+
+  console.log(`Building in ${isProduction ? 'production' : 'development'} mode`);
   
+  let plugins = [
+    vue(),
+    externalAltcha(),
+  ];
+
+  if(isProduction){
+    plugins.push(copyHtmlToRoot());
+  }
+
+
   return {
     base: isProduction ? '/captcha/' : '/',
 
-    plugins: [
-      vue(),
-      externalAltcha(),
-      copyHtmlToRoot(),
-    ],
+    plugins: plugins,
 
     build: {
       outDir: 'dist',
@@ -65,7 +81,8 @@ export default defineConfig(({ command, mode }) => {
 
       rollupOptions: {
         input: {
-          '1': resolve(__dirname, '1.html')
+          '1': resolve(__dirname, '1.html'),
+          '2': resolve(__dirname, '2.html'),
         },
         output: {
           entryFileNames: 'bundles/[name].js',
