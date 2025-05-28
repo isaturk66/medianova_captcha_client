@@ -47,31 +47,34 @@ function copyHtmlToRoot(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  const isProduction = mode === 'production';
+  
+  return {
+    base: isProduction ? '/captcha/' : '/',
 
-  base: '/captcha/',   // keep dev server happy
+    plugins: [
+      vue(),
+      externalAltcha(),
+      copyHtmlToRoot(),
+    ],
 
-  plugins: [
-    vue(),
-    externalAltcha(),
-    copyHtmlToRoot(),
-  ],
+    build: {
+      outDir: 'dist',
+      emptyOutDir: false,
 
-  build: {
-    outDir: 'dist',
-    emptyOutDir: false,
-
-    rollupOptions: {
-      input: {
-        '1': resolve(__dirname, '1.html')
+      rollupOptions: {
+        input: {
+          '1': resolve(__dirname, '1.html')
+        },
+        output: {
+          entryFileNames: 'bundles/[name].js',
+          chunkFileNames: 'bundles/[name].js',
+          assetFileNames: 'bundles/[name][extname]',
+        },
       },
-      output: {
-        entryFileNames: 'bundles/[name].js',
-        chunkFileNames: 'bundles/[name].js',
-        assetFileNames: 'bundles/[name][extname]',
-      },
+
+      cssCodeSplit: true,
     },
-
-    cssCodeSplit: true,
-  },
+  }
 });

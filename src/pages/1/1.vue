@@ -1,3 +1,4 @@
+
 <template>
   <form id="captchaForm" action="#" method="post">
     <h1>Prove you're human</h1>
@@ -5,9 +6,9 @@
     <!-- Altcha widget emits `statechange` → update `status` -->
     <altcha-widget
       id="altcha"
-      debug
-      challengeurl="/captcha/1/challenge"
-      verifyurl="/captcha/1/challenge"
+      :debug="isDev"
+      :challengeurl="challengeUrl"
+      :verifyurl="verifyUrl"
       @statechange="status = $event.detail.state"
     />
 
@@ -18,10 +19,19 @@
   </form>
 </template>
 
-<!-- This section demonstrates how the state of the Altcha Widget can be used to change state at vue side.
-This will need to be used for at least handling the "error" state which means the verification failed for a user.  -->
 
 <script setup lang="ts">
+/* ──────────────────────────────
+   CRITICAL: build-time env vars, do not edit.
+   ────────────────────────────── */
+const challengeUrl = import.meta.env.VITE_CHALLENGE_URL;
+const verifyUrl    = import.meta.env.VITE_VERIFY_URL;
+const isDev        = import.meta.env.DEV;
+
+/* ────────────────────────────── */
+
+// This section demonstrates how the state of the Altcha Widget can be used to change state at vue side.
+// This will need to be used for at least handling the "error" state which means the verification failed for a user.
 import { ref } from 'vue';
 
 type AltchaState =
@@ -34,16 +44,26 @@ type AltchaState =
 
 const status = ref<AltchaState>('unverified');
 
-// Friendly UI copy for each state
 const messages: Record<AltchaState, string> = {
-  code: 'Enter the code you hear/see.',
-  error: 'Verification failed. Please try again.',
-  verified: 'Success! You are verified.',
+  code:      'Enter the code you hear/see.',
+  error:     'Verification failed. Please try again.',
+  verified:  'Success! You are verified.',
   verifying: 'Checking…',
-  unverified: '',
-  expired: 'Challenge expired. Reload to try again.',
+  unverified:'',
+  expired:   'Challenge expired. Reload to try again.',
 };
 </script>
+
+
+<style scoped>
+h1                { margin-bottom: 1rem; }
+.feedback         { margin-top: .5rem; font-weight: 600; }
+.feedback.error    { color: #e53935; }
+.feedback.verified { color: #43a047; }
+.feedback.verifying{ color: #fbc02d; }
+.feedback.expired  { color: #fb8c00; }
+.feedback.code     { color: #1565c0; }
+</style>
 
 <style scoped>
 h1 { margin-bottom: 1rem; }

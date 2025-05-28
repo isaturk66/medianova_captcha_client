@@ -926,6 +926,11 @@
      });
 
      if (resp.status === 204) {
+       if(debug){
+        alert("Succefull validation, on non-debug mode this would refresh the page.")
+        return;
+       }
+
        location.reload();
        return;
      }

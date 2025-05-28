@@ -74,8 +74,12 @@
     }
   },
   "scripts": {
-    "dev": "concurrently \"vite\" \"bash cors-proxy.sh\"",
-    "build": "npm run build:i18n && npm run build:pages",
+    "dev:widget": "vite build -c vite.bundle-i18n.config.ts --watch",       
+    "dev:pages" : "vite --config vite.pages.config.ts",
+    "dev:proxy" : "bash ./cors-proxy.sh",
+    "dev"       : "concurrently -k -n WIDGET,PAGES,PROXY \"npm:dev:widget\" \"npm:dev:pages\" \"npm:dev:proxy\"",
+
+    "build": "rm -rf dist && npm run build:i18n && npm run build:pages",
     "build:widget": "vite build",
     "build:i18n": "vite build -c vite.bundle-i18n.config.ts",
     "build:pages": "vite build -c vite.pages.config.ts"
