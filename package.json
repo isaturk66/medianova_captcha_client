@@ -74,7 +74,7 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"bash cors-proxy.sh\"",
     "build": "npm run build:i18n && npm run build:pages",
     "build:widget": "vite build",
     "build:i18n": "vite build -c vite.bundle-i18n.config.ts",
@@ -87,6 +87,8 @@
     "@types/node": "^20.16.3",
     "@types/react": "^19.0.12",
     "@vitejs/plugin-vue": "^5.2.4",
+    "concurrently": "^9.1.2",
+    "cors-anywhere": "^0.4.4",
     "csso": "^5.0.5",
     "husky": "^9.1.5",
     "prettier": "3.2.5",

@@ -578,22 +578,6 @@
     return JSON.parse(str);
   }
 
-  /**
-   * Request form submit with a fallback for iOS <16 which does not support requestSubmit
-   */
-  function requestSubmit(submitter?: HTMLElement | null) {
-    if (elForm && 'requestSubmit' in elForm) {
-      elForm.requestSubmit(submitter);
-      // @ts-ignore
-    } else if (elForm?.reportValidity()) {
-      if (submitter) {
-        submitter.click();
-      } else {
-        // @ts-ignore
-        elForm.submit();
-      }
-    }
-  }
 
   /**
    * Sets the expiration timeout for the challenge.
@@ -900,12 +884,20 @@
             dispatch('code', { codeChallenge });
           });
         } else {
-          setState(State.VERIFIED);
-          log('verified');
-          tick().then(() => {
-            dispatch('verified', { payload });
-            submitChallenge(payload!);
-          });
+
+          submitChallenge(payload!)
+            .then(() => {
+              log('challenge submitted successfully');
+              setState(State.VERIFIED);
+              log('verified');
+              tick().then(() => {
+                dispatch('verified', { payload });
+              });
+            })
+            .catch((err) => {
+              log('error submitting challenge', err);
+              setState(State.ERROR, err.message);
+            });
         }
       })
       .catch((err) => {
@@ -933,24 +925,24 @@
        body,
      });
 
-      log('submitChallenge response', resp);
-      log('submitChallenge response body', body);
-      log('submitChallenge response url', resp.url);
-      log('submitChallenge response status', resp.redirected);
-
      if (resp.status === 204) {
        location.reload();
        return;
      }
      if (resp.redirected) {
        location.replace(resp.url);
-       return;
+
+       throw new Error(
+         `Server faied to verify the challenge.`
+       );
      }
      if (!resp.ok) {
        throw new Error(`Unexpected response ${resp.status}`);
      }
    } catch (err) {
-     log(err);
+     throw new Error(
+       `Error submitting challenge: ${err instanceof Error ? err.message : err}`
+     );
    }
  }
 </script>
