@@ -2,7 +2,7 @@
 
 > Privacy‑first CAPTCHA widget built with **Svelte 5** + **Vite** and demo pages in **Vue 3**.
 
-This repository packages the **Altcha** CAPTCHA widget and provides a local developer setup together with sample integration pages for the Medianova platform.
+This repository packages the **Altcha** CAPTCHA widget and provides a local developer setup together with sample integration pages for the Medianova platform. 
 
 ---
 
